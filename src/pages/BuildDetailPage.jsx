@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteBuild, getBuild } from "../services/buildService";
+import { deleteBuild, getBuild, estimatePriceWithAi } from "../services/buildService";
 import { addComment, deleteComment, listComments } from "../services/commentService";
 import { useAuth } from "../context/AuthContext";
 import { useMe } from "../hooks/useMe";
@@ -19,11 +19,17 @@ export default function BuildDetailPage() {
     const [error, setError] = useState("");
     const [deleting, setDeleting] = useState(false);
 
+    // ── Comments ──
     const [comments, setComments] = useState([]);
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [newComment, setNewComment] = useState("");
     const [posting, setPosting] = useState(false);
     const [commentError, setCommentError] = useState("");
+
+    // ── AI price estimate ──
+    const [aiEstimate, setAiEstimate] = useState(null);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState("");
 
     useEffect(() => {
         let cancelled = false;
@@ -58,6 +64,20 @@ export default function BuildDetailPage() {
         } catch (err) {
             alert(err.message);
             setDeleting(false);
+        }
+    };
+
+    const onEstimateWithAi = async () => {
+        setAiLoading(true);
+        setAiError("");
+        setAiEstimate(null);
+        try {
+            const res = await estimatePriceWithAi(id);
+            setAiEstimate(res);
+        } catch (err) {
+            setAiError(err.message);
+        } finally {
+            setAiLoading(false);
         }
     };
 
@@ -244,6 +264,7 @@ export default function BuildDetailPage() {
                     </div>
                 </Reveal>
 
+                {/* ═══ TOTAL CARD (with AI estimate) ═══ */}
                 <Reveal delay={180}>
                     <div className="sticky top-20 border border-token bg-surface p-6">
                         <div className="eyebrow mb-2">Total</div>
@@ -258,6 +279,112 @@ export default function BuildDetailPage() {
                             {build.components.length === 1 ? "" : "s"} · {comments.length} comment
                             {comments.length === 1 ? "" : "s"}
                         </div>
+
+                        {/* AI price estimate button */}
+                        <button
+                            type="button"
+                            onClick={onEstimateWithAi}
+                            disabled={aiLoading}
+                            className="btn-secondary w-full justify-center mt-5 !py-2.5 !text-[12.5px] disabled:opacity-50"
+                        >
+                            {aiLoading ? (
+                                <>
+                  <span
+                      className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: "var(--border)", borderTopColor: "var(--purple)" }}
+                  />
+                                    Analyzing market…
+                                </>
+                            ) : (
+                                <>
+                                    <svg
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" />
+                                    </svg>
+                                    Estimate Market Price with AI
+                                </>
+                            )}
+                        </button>
+
+                        {aiError && (
+                            <div className="mt-3 text-[12px] text-red-500 bg-red-500/10 border border-red-500/30 p-2.5">
+                                {aiError}
+                            </div>
+                        )}
+
+                        {aiEstimate && aiEstimate.marketCondition !== "unavailable" && (
+                            <div className="mt-4 p-4 border border-token bg-page space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--purple)] animate-pulse" />
+                                    <span className="text-[11px] uppercase tracking-widest font-semibold text-accent">
+                    AI Market Estimate
+                  </span>
+                                </div>
+
+                                <div>
+                                    <div className="font-display text-3xl font-bold text-pink">
+                                        {Number(aiEstimate.estimatedTotal).toLocaleString()}
+                                        <span className="text-[13px] font-normal text-dim ml-1.5">SAR</span>
+                                    </div>
+
+                                    {aiEstimate.percentDifference != null && (
+                                        <div className="text-[12px] mt-1">
+                      <span
+                          className={
+                              aiEstimate.percentDifference > 0
+                                  ? "text-red-500"
+                                  : aiEstimate.percentDifference < 0
+                                      ? "text-emerald-500"
+                                      : "text-dim"
+                          }
+                      >
+                        {aiEstimate.percentDifference > 0 &&
+                            `↑ ${aiEstimate.percentDifference}%`}
+                          {aiEstimate.percentDifference < 0 &&
+                              `↓ ${Math.abs(aiEstimate.percentDifference)}%`}
+                          {aiEstimate.percentDifference === 0 && `same as`}
+                      </span>{" "}
+                                            <span className="text-dim">vs stored price</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 text-[11px]">
+                                    <span className="text-dim">Market:</span>
+                                    <span
+                                        className={
+                                            aiEstimate.marketCondition === "rising"
+                                                ? "text-red-500"
+                                                : aiEstimate.marketCondition === "falling"
+                                                    ? "text-emerald-500"
+                                                    : "text-dim"
+                                        }
+                                    >
+                    {aiEstimate.marketCondition}
+                  </span>
+                                </div>
+
+                                {aiEstimate.explanation && (
+                                    <p className="text-[12px] text-dim leading-relaxed pt-2 border-t border-token">
+                                        {aiEstimate.explanation}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {aiEstimate && aiEstimate.marketCondition === "unavailable" && (
+                            <div className="mt-4 p-3 border border-amber-500/30 bg-amber-500/[0.06] text-[12px] text-amber-600 dark:text-amber-400">
+                                {aiEstimate.explanation}
+                            </div>
+                        )}
                     </div>
                 </Reveal>
             </div>
@@ -272,7 +399,6 @@ export default function BuildDetailPage() {
             </span>
                     </h2>
 
-                    {/* Add comment */}
                     {firebaseUser ? (
                         <form onSubmit={onPostComment} className="mb-6">
               <textarea
@@ -310,7 +436,6 @@ export default function BuildDetailPage() {
                         </div>
                     )}
 
-                    {/* Comment list */}
                     {commentsLoading ? (
                         <div className="space-y-3">
                             {Array.from({ length: 2 }).map((_, i) => (
@@ -333,7 +458,6 @@ export default function BuildDetailPage() {
                                 const initial = (c.userDisplayName || "?").charAt(0).toUpperCase();
                                 return (
                                     <li key={c.id} className="flex gap-3 group">
-                                        {/* Avatar */}
                                         <Link
                                             to={`/users/${c.userId}`}
                                             className="w-10 h-10 shrink-0 overflow-hidden grid place-items-center font-display font-semibold text-[14px] text-white border border-token"
