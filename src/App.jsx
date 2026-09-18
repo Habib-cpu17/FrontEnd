@@ -14,6 +14,7 @@ import MyBuildsPage from "./pages/MyBuildsPage";
 import PublicBuildsPage from "./pages/PublicBuildsPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
+import ChatWidget from "./components/chat/ChatWidget";
 
 
 export default function App() {
@@ -80,6 +81,7 @@ export default function App() {
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
+                <ChatWidget />
             </BrowserRouter>
         </AuthProvider>
     );
