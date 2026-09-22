@@ -1,16 +1,83 @@
-# React + Vite
+# SetupBuilder - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite web client for SetupBuilder - a PC build planner for the
+Saudi market. Consumes the Spring Boot backend REST API.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Layer | Technology |
+| :--- | :--- |
+| Framework | React 19.1.0 |
+| Build tool | Vite 6 |
+| Router | React Router v7 |
+| Styling | Tailwind CSS v3.4.17 (PostCSS) |
+| HTTP | Axios (with Firebase token interceptor) |
+| Auth | Firebase JS SDK (email/password) |
+| Fonts | Space Grotesk + Inter (Google Fonts) |
+| Deployment | Render Static Site |
 
-## React Compiler
+## Local Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 20+
+- The backend running on http://localhost:8080
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. Install dependencies
+
+    npm install
+
+### 2. Create .env.local
+
+This file is gitignored - it holds the Firebase Web config.
+
+    VITE_API_BASE_URL=http://localhost:8080
+    VITE_FIREBASE_API_KEY=AIzaSy...your-key
+    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+    VITE_FIREBASE_PROJECT_ID=your-project
+    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+    VITE_FIREBASE_MESSAGING_SENDER_ID=1234567890
+    VITE_FIREBASE_APP_ID=1:1234567890:web:abcdef
+
+Get these values from Firebase Console -> Project Settings -> Your apps -> Web.
+
+### 3. Run
+
+    npm run dev
+
+Open http://localhost:5173.
+
+## Build
+
+    npm run build
+
+Produces a static site in dist/.
+
+## Deploy to Render
+
+Create a Static Site on Render:
+
+- Build Command: npm install && npm run build
+- Publish Directory: dist
+- Environment: add every VITE_* variable from ENVIRONMENT.md
+
+The public/_redirects file handles SPA routing automatically.
+
+## Project Structure
+
+See ARCHITECTURE.md.
+
+## Troubleshooting
+
+See TROUBLESHOOTING.md.
+
+## Notes
+
+- Vite env vars are baked at build time. After changing any VITE_* variable
+  on Render, trigger a Manual Deploy - a simple page reload isn't enough.
+- .env.local is not committed. Recreate it on every new machine.
+- Theme (dark/light) persists in localStorage.
+
+## License
+
+Private project. Not for redistribution.
