@@ -1,8 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 
 export default function ProtectedRoute({ children }) {
     const { firebaseUser, loading } = useAuth();
+    const { t } = useLang();
 
     if (loading) {
         return (
@@ -10,7 +12,7 @@ export default function ProtectedRoute({ children }) {
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
                          style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }} />
-                    <p className="text-[12.5px] text-dim">Authenticating…</p>
+                    <p className="text-[12.5px] text-dim">{t("auth.authenticating")}</p>
                 </div>
             </div>
         );

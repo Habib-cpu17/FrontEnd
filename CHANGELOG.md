@@ -89,8 +89,24 @@ All notable changes to the SetupBuilder frontend.
 
 ## [Unreleased]
 
+### Added
+- Arabic language support with RTL layout:
+  - LanguageContext (reactive t()/n()/d(), persists to localStorage "lang")
+  - LanguageToggle button in the navbar (flips en/ar, sets <html lang>/<html dir>)
+  - src/locales/* namespace dictionaries (en + ar) for every feature
+  - Tajawal Arabic Google Font + html[lang="ar"] rules in index.css
+  - Logical Tailwind utilities (ms/pe/start/end) for RTL mirroring
+  - ADR 0007 - i18n in a React Context with RTL support
+
+### Fixed
+- Arabic hero title (Landing page) now uses a taller line-height so the two
+  heading lines no longer collide
+- Angular search bar keeps its mirrored diagonal cut in RTL (clip-path,
+  border and overlap margins flip via html[dir="rtl"] rules)
+- LanguageToggle added to the standalone landing header
+
 ### Planned
-- Arabic translation + RTL layout
+- AI chat / Gemini replies in Arabic (requires backend prompt/language support)
 - Followers + feed
 - Comparison view (2-3 builds side-by-side)
 - Price drop alerts UI

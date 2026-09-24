@@ -4,15 +4,27 @@ import { deleteBuild, getBuild, estimatePriceWithAi } from "../services/buildSer
 import { addComment, deleteComment, listComments } from "../services/commentService";
 import { useAuth } from "../context/AuthContext";
 import { useMe } from "../hooks/useMe";
+import { useLang } from "../context/LanguageContext";
 import { toAbsoluteUrl } from "../services/uploadService";
 import Reveal from "../components/Reveal";
 import BackButton from "../components/BackButton";
+
+const CAT_LABEL_KEYS = {
+    CPU: "builder.catCPU",
+    MOTHERBOARD: "builder.catMotherboard",
+    RAM: "builder.catMemory",
+    GPU: "builder.catGpu",
+    STORAGE: "builder.catStorage",
+    POWER_SUPPLY: "builder.catPowerSupply",
+    CASE: "builder.catCase",
+};
 
 export default function BuildDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { firebaseUser } = useAuth();
     const { me } = useMe();
+    const { t, n, d } = useLang();
 
     const [build, setBuild] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -56,7 +68,7 @@ export default function BuildDetailPage() {
     }, [id]);
 
     const onDelete = async () => {
-        if (!confirm("Delete this build? This cannot be undone.")) return;
+        if (!confirm(t("builder.deleteConfirm"))) return;
         setDeleting(true);
         try {
             await deleteBuild(id);
@@ -98,7 +110,7 @@ export default function BuildDetailPage() {
     };
 
     const onDeleteComment = async (commentId) => {
-        if (!confirm("Delete this comment?")) return;
+        if (!confirm(t("builder.deleteCommentConfirm"))) return;
         try {
             await deleteComment(commentId);
             setComments((prev) => prev.filter((c) => c.id !== commentId));
@@ -109,13 +121,13 @@ export default function BuildDetailPage() {
 
     const formatDate = (iso) => {
         if (!iso) return "";
-        const d = new Date(iso);
-        const diff = (new Date() - d) / 1000;
-        if (diff < 60) return "just now";
-        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-        if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-        return d.toLocaleDateString();
+        const dt = new Date(iso);
+        const diff = (new Date() - dt) / 1000;
+        if (diff < 60) return t("builder.justNow");
+        if (diff < 3600) return t("builder.minutesAgo", { count: Math.floor(diff / 60) });
+        if (diff < 86400) return t("builder.hoursAgo", { count: Math.floor(diff / 3600) });
+        if (diff < 604800) return t("builder.daysAgo", { count: Math.floor(diff / 86400) });
+        return d(iso);
     };
 
     if (loading) {
@@ -132,7 +144,7 @@ export default function BuildDetailPage() {
     if (error) {
         return (
             <div className="space-y-4">
-                <BackButton label="Back" />
+                <BackButton label={t("misc.back")} />
                 <div className="border border-red-500/30 bg-red-500/10 p-5 text-[13px] text-red-500">
                     {error}
                 </div>
@@ -145,7 +157,7 @@ export default function BuildDetailPage() {
 
     return (
         <div className="space-y-8">
-            <BackButton label="Back to builds" />
+            <BackButton label={t("builder.backToBuilds")} />
 
             {/* ═══ HERO ═══ */}
             <Reveal>
@@ -155,11 +167,11 @@ export default function BuildDetailPage() {
                             <div className="flex items-center gap-2 mb-3">
                                 {build.isPublic ? (
                                     <span className="text-[10.5px] font-mono uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 px-2 py-0.5">
-                    Public
+                    {t("builder.public")}
                   </span>
                                 ) : (
                                     <span className="text-[10.5px] font-mono uppercase tracking-wider bg-page border border-token text-dim px-2 py-0.5">
-                    Private
+                    {t("builder.private")}
                   </span>
                                 )}
                                 <span className="text-[11px] font-mono text-dim">
@@ -171,17 +183,17 @@ export default function BuildDetailPage() {
                                 {build.name}
                             </h1>
                             <p className="text-[13px] text-dim mt-2">
-                                by{" "}
+                                {t("builder.by")}{" "}
                                 {build.userId ? (
                                     <Link
                                         to={`/users/${build.userId}`}
                                         className="text-pink hover:underline"
                                     >
-                                        {build.userDisplayName || "Anonymous"}
+                                        {build.userDisplayName || t("builder.anonymous")}
                                     </Link>
                                 ) : (
                                     <span className="text-body">
-                    {build.userDisplayName || "Anonymous"}
+                    {build.userDisplayName || t("builder.anonymous")}
                   </span>
                                 )}
                             </p>
@@ -198,14 +210,14 @@ export default function BuildDetailPage() {
                                     to={`/builder/${build.id}`}
                                     className="btn-secondary !py-2 !px-3.5 !text-[13px]"
                                 >
-                                    Edit
+                                    {t("builder.edit")}
                                 </Link>
                                 <button
                                     onClick={onDelete}
                                     disabled={deleting}
                                     className="text-[13px] font-medium px-3.5 py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 disabled:opacity-50 transition"
                                 >
-                                    {deleting ? "Deleting…" : "Delete"}
+                                    {deleting ? t("builder.deleting") : t("builder.delete")}
                                 </button>
                             </div>
                         )}
@@ -218,7 +230,7 @@ export default function BuildDetailPage() {
                 <Reveal delay={80}>
                     <div className="border border-amber-500/30 bg-amber-500/[0.06] p-5">
                         <div className="font-semibold text-amber-600 dark:text-amber-400 mb-3 text-[13px]">
-                            Compatibility warnings
+                            {t("builder.compatWarnings")}
                         </div>
                         <ul className="space-y-1.5 text-[13px] text-amber-700 dark:text-amber-300/90 list-disc list-inside">
                             {build.compatibilityWarnings.map((w, i) => (
@@ -240,7 +252,7 @@ export default function BuildDetailPage() {
                             >
                                 <div className="min-w-0">
                                     <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-accent">
-                                        {c.component.category.replace("_", " ")}
+                                        {t(CAT_LABEL_KEYS[c.component.category] || c.component.category.replace("_", " "))}
                                     </div>
                                     <div className="font-display font-semibold text-[14.5px] mt-1 truncate">
                                         {c.component.name}
@@ -248,15 +260,15 @@ export default function BuildDetailPage() {
                                     <div className="text-[12px] text-dim mt-0.5">
                                         {c.component.brand}
                                         {c.component.model ? ` · ${c.component.model}` : ""}
-                                        {c.quantity > 1 && ` · qty ${c.quantity}`}
+                                        {c.quantity > 1 && ` · ${t("builder.qty", { count: c.quantity })}`}
                                     </div>
                                 </div>
-                                <div className="text-right shrink-0 pl-4">
+                                <div className="text-end shrink-0 ps-4">
                                     <div className="text-[11.5px] text-dim font-mono">
-                                        {Number(c.priceAtTimeOfBuild).toLocaleString()} ea
+                                        {n(c.priceAtTimeOfBuild)} {t("builder.each")}
                                     </div>
                                     <div className="font-display font-bold text-[14px] text-pink">
-                                        {Number(c.lineTotal).toLocaleString()} SAR
+                                        {n(c.lineTotal)} SAR
                                     </div>
                                 </div>
                             </div>
@@ -267,17 +279,15 @@ export default function BuildDetailPage() {
                 {/* ═══ TOTAL CARD (with AI estimate) ═══ */}
                 <Reveal delay={180}>
                     <div className="sticky top-20 border border-token bg-surface p-6">
-                        <div className="eyebrow mb-2">Total</div>
-                        <div className="text-right">
+                        <div className="eyebrow mb-2">{t("builder.total")}</div>
+                        <div className="text-end">
               <span className="font-display text-4xl font-bold">
-                {Number(build.totalPrice).toLocaleString()}
+                {n(build.totalPrice)}
               </span>
-                            <span className="text-[13px] text-dim ml-2">SAR</span>
+                            <span className="text-[13px] text-dim ms-2">SAR</span>
                         </div>
                         <div className="text-[12px] text-dim mt-3 pt-3 border-t border-token">
-                            {build.components.length} component
-                            {build.components.length === 1 ? "" : "s"} · {comments.length} comment
-                            {comments.length === 1 ? "" : "s"}
+                            {t(build.components.length === 1 ? "builder.oneComponent" : "builder.manyComponents", { count: build.components.length })} · {t(comments.length === 1 ? "builder.oneComment" : "builder.manyComments", { count: comments.length })}
                         </div>
 
                         {/* AI price estimate button */}
@@ -289,11 +299,10 @@ export default function BuildDetailPage() {
                         >
                             {aiLoading ? (
                                 <>
-                  <span
-                      className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin"
-                      style={{ borderColor: "var(--border)", borderTopColor: "var(--purple)" }}
-                  />
-                                    Analyzing market…
+<span className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin"
+                       style={{ borderColor: "var(--border)", borderTopColor: "var(--purple)" }}
+                   />
+                                    {t("builder.analyzingMarket")}
                                 </>
                             ) : (
                                 <>
@@ -309,7 +318,7 @@ export default function BuildDetailPage() {
                                     >
                                         <path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" />
                                     </svg>
-                                    Estimate Market Price with AI
+                                    {t("builder.estimateAi")}
                                 </>
                             )}
                         </button>
@@ -325,15 +334,15 @@ export default function BuildDetailPage() {
                                 <div className="flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--purple)] animate-pulse" />
                                     <span className="text-[11px] uppercase tracking-widest font-semibold text-accent">
-                    AI Market Estimate
+                    {t("builder.aiMarketEstimate")}
                   </span>
                                 </div>
 
                                 <div>
-                                    <div className="font-display text-3xl font-bold text-pink">
-                                        {Number(aiEstimate.estimatedTotal).toLocaleString()}
-                                        <span className="text-[13px] font-normal text-dim ml-1.5">SAR</span>
-                                    </div>
+<div className="font-display text-3xl font-bold text-pink">
+                                    {n(aiEstimate.estimatedTotal)}
+                                    <span className="text-[13px] font-normal text-dim ms-1.5">SAR</span>
+                                </div>
 
                                     {aiEstimate.percentDifference != null && (
                                         <div className="text-[12px] mt-1">
@@ -350,15 +359,15 @@ export default function BuildDetailPage() {
                             `↑ ${aiEstimate.percentDifference}%`}
                           {aiEstimate.percentDifference < 0 &&
                               `↓ ${Math.abs(aiEstimate.percentDifference)}%`}
-                          {aiEstimate.percentDifference === 0 && `same as`}
+                          {aiEstimate.percentDifference === 0 && `${t("builder.sameAs")}`}
                       </span>{" "}
-                                            <span className="text-dim">vs stored price</span>
+                                            <span className="text-dim">{t("builder.vsStoredPrice")}</span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="flex items-center gap-2 text-[11px]">
-                                    <span className="text-dim">Market:</span>
+                                    <span className="text-dim">{t("builder.market")}</span>
                                     <span
                                         className={
                                             aiEstimate.marketCondition === "rising"
@@ -368,7 +377,7 @@ export default function BuildDetailPage() {
                                                     : "text-dim"
                                         }
                                     >
-                    {aiEstimate.marketCondition}
+                    {aiEstimate.marketCondition === "rising" ? t("builder.marketRising") : aiEstimate.marketCondition === "falling" ? t("builder.marketFalling") : aiEstimate.marketCondition}
                   </span>
                                 </div>
 
@@ -393,7 +402,7 @@ export default function BuildDetailPage() {
             <Reveal delay={220}>
                 <div className="border border-token bg-surface p-6">
                     <h2 className="font-display text-lg font-semibold mb-5">
-                        Comments{" "}
+                        {t("builder.commentsTitle")}{" "}
                         <span className="text-dim font-normal text-[13px]">
               ({comments.length})
             </span>
@@ -404,7 +413,7 @@ export default function BuildDetailPage() {
               <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Share your thoughts on this build…"
+                  placeholder={t("builder.commentPlaceholder")}
                   rows={3}
                   maxLength={2000}
                   className="w-full px-3 py-2.5 text-[13.5px] bg-page border border-token text-body placeholder:text-dim resize-none focus:outline-none focus:border-[color:var(--purple)] focus:ring-2 focus:ring-[color:var(--purple)]/15 transition"
@@ -418,7 +427,7 @@ export default function BuildDetailPage() {
                                     disabled={posting || !newComment.trim()}
                                     className="btn-primary !py-2 !px-4 !text-[13px] disabled:opacity-40"
                                 >
-                                    {posting ? "Posting…" : "Post comment"}
+                                    {posting ? t("builder.posting") : t("builder.postComment")}
                                 </button>
                             </div>
                             {commentError && (
@@ -430,9 +439,9 @@ export default function BuildDetailPage() {
                     ) : (
                         <div className="mb-6 border border-token bg-page p-3.5 text-[13px] text-dim">
                             <Link to="/login" className="text-pink hover:underline">
-                                Sign in
+                                {t("builder.signIn")}
                             </Link>{" "}
-                            to leave a comment.
+                            {t("builder.leaveCommentPrompt")}
                         </div>
                     )}
 
@@ -448,7 +457,7 @@ export default function BuildDetailPage() {
                     ) : comments.length === 0 ? (
                         <div className="border border-dashed border-token p-8 text-center">
                             <p className="text-dim text-[13px]">
-                                No comments yet. Be the first.
+                                {t("builder.noComments")}
                             </p>
                         </div>
                     ) : (
@@ -480,7 +489,7 @@ export default function BuildDetailPage() {
                                                     to={`/users/${c.userId}`}
                                                     className="font-display font-semibold text-[13.5px] hover:text-pink transition"
                                                 >
-                                                    {c.userDisplayName || "Anonymous"}
+                                                    {c.userDisplayName || t("builder.anonymous")}
                                                 </Link>
                                                 <span className="text-[11px] text-dim font-mono">
                           {formatDate(c.createdAt)}
@@ -488,9 +497,9 @@ export default function BuildDetailPage() {
                                                 {canDelete && (
                                                     <button
                                                         onClick={() => onDeleteComment(c.id)}
-                                                        className="ml-auto text-[11.5px] text-dim hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+                                                        className="ms-auto text-[11.5px] text-dim hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
                                                     >
-                                                        Delete
+                                                        {t("builder.delete")}
                                                     </button>
                                                 )}
                                             </div>

@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listMyBuilds } from "../services/buildService";
 import Reveal from "../components/Reveal";
+import { useLang } from "../context/LanguageContext";
 
 export default function MyBuildsPage() {
     const [data, setData] = useState(null);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const { t, n } = useLang();
 
     useEffect(() => {
         let cancelled = false;
@@ -24,11 +26,11 @@ export default function MyBuildsPage() {
             <Reveal>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <h1 className="font-display text-3xl font-bold">My Builds</h1>
-                        <p className="text-[13.5px] text-dim mt-1.5">Your saved PC configurations.</p>
+                        <h1 className="font-display text-3xl font-bold">{t("builder.myBuildsTitle")}</h1>
+                        <p className="text-[13.5px] text-dim mt-1.5">{t("builder.myBuildsSubtitle")}</p>
                     </div>
                     <Link to="/builder" className="btn-primary">
-                        + New build
+                        {t("builder.newBuild")}
                     </Link>
                 </div>
             </Reveal>
@@ -50,9 +52,9 @@ export default function MyBuildsPage() {
             {!loading && data && data.content.length === 0 && (
                 <Reveal>
                     <div className="border border-dashed border-token p-12 text-center">
-                        <p className="text-dim text-sm mb-4">You haven't created any builds yet.</p>
+                        <p className="text-dim text-sm mb-4">{t("builder.noBuilds")}</p>
                         <Link to="/builder" className="text-accent text-[13.5px] hover:underline">
-                            Start building →
+                            {t("builder.startBuilding")} →
                         </Link>
                     </div>
                 </Reveal>
@@ -70,11 +72,11 @@ export default function MyBuildsPage() {
                                         </h3>
                                         {b.isPublic ? (
                                             <span className="text-[10px] font-mono uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 shrink-0">
-                        Public
+                        {t("builder.public")}
                       </span>
                                         ) : (
                                             <span className="text-[10px] font-mono uppercase tracking-wider bg-page border border-token text-dim px-1.5 py-0.5 shrink-0">
-                        Private
+                        {t("builder.private")}
                       </span>
                                         )}
                                     </div>
@@ -85,10 +87,10 @@ export default function MyBuildsPage() {
                                     )}
                                     <div className="mt-auto pt-3 border-t border-token flex items-center justify-between">
                     <span className="text-[11.5px] text-dim font-mono">
-                      {b.components.length} part{b.components.length === 1 ? "" : "s"}
+                      {t("builder.parts", { count: b.components.length })}
                     </span>
                                         <span className="font-display font-semibold text-[13.5px] text-accent">
-                      {Number(b.totalPrice).toLocaleString()} SAR
+                      {n(b.totalPrice)} SAR
                     </span>
                                     </div>
                                 </Link>
@@ -104,7 +106,7 @@ export default function MyBuildsPage() {
                                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Prev
+                                {t("misc.prev")}
                             </button>
                             <span className="text-[13px] text-dim font-mono">
                 {data.number + 1} / {Math.max(1, data.totalPages)}
@@ -115,7 +117,7 @@ export default function MyBuildsPage() {
                                 onClick={() => setPage((p) => p + 1)}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Next
+                                {t("misc.next")}
                             </button>
                         </div>
                     )}

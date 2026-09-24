@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useLang } from "../context/LanguageContext";
 
 export default function SearchBar({ className = "" }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useLang();
     const [query, setQuery] = useState("");
 
     // Sync the input value with the ?q= URL param when on /components
@@ -36,13 +38,13 @@ export default function SearchBar({ className = "" }) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={onKeyDown}
-                    placeholder="Search components…"
+                    placeholder={t("catalog.searchPlaceholder")}
                     className="flex-1 h-full bg-transparent px-4 text-[13px] text-body placeholder:text-dim focus:outline-none"
                 />
                 <div className="search-cat">
-                    All Categories
+                    {t("catalog.allCategories")}
                     <svg
-                        className="ml-1.5"
+                        className="ms-1.5"
                         width="11"
                         height="11"
                         viewBox="0 0 24 24"
@@ -60,7 +62,7 @@ export default function SearchBar({ className = "" }) {
                 type="button"
                 onClick={submit}
                 className="search-btn"
-                aria-label="Search"
+                aria-label={t("catalog.searchButton")}
             >
                 <svg
                     width="16"

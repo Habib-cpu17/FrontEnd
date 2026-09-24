@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 import ThemeToggle from "../components/ThemeToggle";
 
 export default function LoginPage() {
+    const { t } = useLang();
     const { login } = useAuth();
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
@@ -19,7 +21,7 @@ export default function LoginPage() {
             await login(email, password);
             navigate("/dashboard");
         } catch (err) {
-            setError(err.message || "Login failed");
+            setError(err.message || t("auth.loginFailed"));
         } finally {
             setBusy(false);
         }
@@ -41,7 +43,7 @@ export default function LoginPage() {
                             <div className="w-3 h-3 rounded-sm bg-[color:var(--bg)]" />
                         </div>
                         <span className="font-display font-bold tracking-tight text-[15px]">
-              Setup Builder
+              {t("auth.brand")}
             </span>
                     </Link>
 
@@ -50,8 +52,8 @@ export default function LoginPage() {
                         className="rounded-2xl border border-token bg-surface p-8 space-y-5"
                     >
                         <div>
-                            <h1 className="font-display text-2xl font-bold">Welcome back</h1>
-                            <p className="text-[13px] text-dim mt-1">Sign in to keep building.</p>
+                            <h1 className="font-display text-2xl font-bold">{t("auth.welcomeBack")}</h1>
+                            <p className="text-[13px] text-dim mt-1">{t("auth.loginSubtitle")}</p>
                         </div>
 
                         {error && (
@@ -62,43 +64,43 @@ export default function LoginPage() {
 
                         <div className="space-y-3">
                             <div>
-                                <label className="text-[12px] text-dim mb-1.5 block">Email</label>
+                                <label className="text-[12px] text-dim mb-1.5 block">{t("auth.email")}</label>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     className={inputCls}
-                                    placeholder="you@example.com"
+                                    placeholder={t("auth.emailPlaceholder")}
                                 />
                             </div>
                             <div>
-                                <label className="text-[12px] text-dim mb-1.5 block">Password</label>
+                                <label className="text-[12px] text-dim mb-1.5 block">{t("auth.password")}</label>
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     className={inputCls}
-                                    placeholder="••••••••"
+                                    placeholder={t("auth.passwordPlaceholder")}
                                 />
                             </div>
                         </div>
 
                         <button type="submit" disabled={busy} className="btn-primary w-full justify-center disabled:opacity-50">
-                            {busy ? "Signing in…" : "Sign in"}
+                            {busy ? t("auth.signingIn") : t("auth.signIn")}
                         </button>
 
                         <p className="text-[13px] text-dim text-center">
-                            No account?{" "}
+                            {t("auth.noAccount")}{" "}
                             <Link to="/register" className="text-accent hover:underline">
-                                Create one
+                                {t("auth.createOne")}
                             </Link>
                         </p>
                     </form>
 
                     <Link to="/" className="block text-center mt-6 text-[12.5px] text-dim hover:opacity-80 transition">
-                        ← Back to home
+                        {t("auth.backHome")}
                     </Link>
                 </div>
             </div>

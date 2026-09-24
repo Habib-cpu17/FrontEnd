@@ -4,14 +4,10 @@ import ComponentsTab from "../components/admin/ComponentsTab";
 import CuratedTab from "../components/admin/CuratedTab";
 import UsersTab from "../components/admin/UsersTab";
 import { adminGetPriceProvider, adminRefreshPrices } from "../services/adminService";
-
-const TABS = [
-    { key: "components", label: "Components" },
-    { key: "curated", label: "Curated Builds" },
-    { key: "users", label: "Users" },
-];
+import { useLang } from "../context/LanguageContext";
 
 export default function AdminPage() {
+    const { t } = useLang();
     const [tab, setTab] = useState("components");
     const [provider, setProvider] = useState("");
     const [refreshing, setRefreshing] = useState(false);
@@ -27,28 +23,35 @@ export default function AdminPage() {
         try {
             const res = await adminRefreshPrices();
             setRefreshMsg(
-                `Updated ${res.changed} price${res.changed === 1 ? "" : "s"} using "${res.provider}".`
+                t(
+                    res.changed === 1 ? "admin.updatedPricesOne" : "admin.updatedPrices",
+                    { count: res.changed, provider: res.provider }
+                )
             );
         } catch (e) {
-            setRefreshMsg(`Error: ${e.message}`);
+            setRefreshMsg(t("admin.refreshError", { message: e.message }));
         } finally {
             setRefreshing(false);
         }
     };
 
+    const TABS = [
+        { key: "components", label: t("admin.tabs.components") },
+        { key: "curated", label: t("admin.tabs.curated") },
+        { key: "users", label: t("admin.tabs.users") },
+    ];
+
     return (
         <div className="space-y-8">
             <Reveal>
                 <div>
-                    <div className="eyebrow mb-2">Admin</div>
-                    <h1 className="font-display text-3xl font-bold">Dashboard</h1>
-                    <p className="text-[13.5px] text-dim mt-1.5">
-                        Manage the catalog, curated builds, and users.
-                    </p>
+                    <div className="eyebrow mb-2">{t("admin.eyebrow")}</div>
+                    <h1 className="font-display text-3xl font-bold">{t("admin.title")}</h1>
+                    <p className="text-[13.5px] text-dim mt-1.5">{t("admin.subtitle")}</p>
 
                     <div className="flex flex-wrap items-center gap-3 mt-4">
             <span className="text-[11.5px] font-mono text-dim">
-              provider: <span className="text-accent">{provider || "…"}</span>
+              {t("admin.provider")} <span className="text-accent">{provider || "…"}</span>
             </span>
                         <button
                             type="button"
@@ -56,7 +59,7 @@ export default function AdminPage() {
                             disabled={refreshing}
                             className="text-[12.5px] font-medium px-3.5 py-2 border border-token text-accent hover:opacity-80 transition disabled:opacity-50"
                         >
-                            {refreshing ? "Refreshing…" : "Refresh prices now"}
+                            {refreshing ? t("admin.refreshing") : t("admin.refreshNow")}
                         </button>
                         {refreshMsg && <span className="text-[12px] text-dim">{refreshMsg}</span>}
                     </div>
@@ -65,17 +68,17 @@ export default function AdminPage() {
 
             <Reveal delay={80}>
                 <div className="flex flex-wrap gap-2 border-b border-token">
-                    {TABS.map((t) => (
+                    {TABS.map((tb) => (
                         <button
-                            key={t.key}
+                            key={tb.key}
                             type="button"
-                            onClick={() => setTab(t.key)}
+                            onClick={() => setTab(tb.key)}
                             className={`relative px-3.5 py-2.5 text-[13.5px] transition ${
-                                tab === t.key ? "text-body font-medium" : "text-dim hover:text-body"
+                                tab === tb.key ? "text-body font-medium" : "text-dim hover:text-body"
                             }`}
                         >
-                            {t.label}
-                            {tab === t.key && (
+                            {tb.label}
+                            {tab === tb.key && (
                                 <span
                                     className="absolute bottom-0 left-0 right-0 h-[2px]"
                                     style={{ background: "var(--accent)" }}

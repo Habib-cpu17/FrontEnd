@@ -77,6 +77,9 @@ See TROUBLESHOOTING.md.
   on Render, trigger a Manual Deploy - a simple page reload isn't enough.
 - .env.local is not committed. Recreate it on every new machine.
 - Theme (dark/light) persists in localStorage.
+- Language: toggle EN/AR with the globe button in the navbar. The choice
+  persists in localStorage ("lang"); Arabic switches the page to RTL and
+  uses the Tajawal font. First visit auto-detects an Arabic browser.
 
 ## License
 

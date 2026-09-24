@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useLang } from "../context/LanguageContext";
 
-export default function BackButton({ label = "Back", to = null }) {
+export default function BackButton({ label = null, to = null }) {
     const navigate = useNavigate();
+    const { t } = useLang();
 
     const onClick = () => {
         if (to) navigate(to);
@@ -27,7 +29,7 @@ export default function BackButton({ label = "Back", to = null }) {
                 <line x1="19" y1="12" x2="5" y2="12" />
                 <polyline points="12 19 5 12 12 5" />
             </svg>
-            {label}
+            {label ?? t("misc.back")}
         </button>
     );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLang } from "../context/LanguageContext";
 import { useToast } from "../context/ToastContext";
 import { updateMyProfile } from "../services/userService";
 import { uploadAvatar, uploadBanner, toAbsoluteUrl } from "../services/uploadService";
@@ -10,6 +11,7 @@ const AVATAR_MAX_MB = 2;
 const BANNER_MAX_MB = 5;
 
 export default function EditProfileModal({ open, profile, onClose, onSaved }) {
+    const { t } = useLang();
     const toast = useToast();
     const [form, setForm] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -53,11 +55,11 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
 
         setAvatarErr("");
         if (!file.type.startsWith("image/")) {
-            setAvatarErr("Only image files are allowed.");
+            setAvatarErr(t("profile.uploadOnlyImages"));
             return;
         }
         if (file.size > AVATAR_MAX_MB * 1024 * 1024) {
-            setAvatarErr(`Image is too large. Max ${AVATAR_MAX_MB} MB.`);
+            setAvatarErr(t("profile.uploadTooLarge", { mb: AVATAR_MAX_MB }));
             return;
         }
 
@@ -66,7 +68,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
             const url = await uploadAvatar(file);
             set("avatarUrl", url);
         } catch (err) {
-            setAvatarErr(err.message || "Upload failed");
+            setAvatarErr(err.message || t("profile.uploadFailed"));
         } finally {
             setAvatarUploading(false);
         }
@@ -79,11 +81,11 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
 
         setBannerErr("");
         if (!file.type.startsWith("image/")) {
-            setBannerErr("Only image files are allowed.");
+            setBannerErr(t("profile.uploadOnlyImages"));
             return;
         }
         if (file.size > BANNER_MAX_MB * 1024 * 1024) {
-            setBannerErr(`Image is too large. Max ${BANNER_MAX_MB} MB.`);
+            setBannerErr(t("profile.uploadTooLarge", { mb: BANNER_MAX_MB }));
             return;
         }
 
@@ -92,7 +94,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
             const url = await uploadBanner(file);
             set("bannerUrl", url);
         } catch (err) {
-            setBannerErr(err.message || "Upload failed");
+            setBannerErr(err.message || t("profile.uploadFailed"));
         } finally {
             setBannerUploading(false);
         }
@@ -107,7 +109,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
         setError("");
         try {
             const updated = await updateMyProfile(form);
-            toast.success("Profile updated");
+            toast.success(t("profile.profileUpdated"));
             onSaved(updated);
             onClose();
         } catch (err) {
@@ -129,11 +131,12 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
             >
                 {/* Header */}
                 <div className="p-5 border-b border-token flex items-center justify-between">
-                    <h2 className="font-display text-lg font-bold">Edit profile</h2>
+                    <h2 className="font-display text-lg font-bold">{t("profile.edit")}</h2>
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={saving}
+                        aria-label={t("profile.close")}
                         className="w-9 h-9 border border-token grid place-items-center hover:border-red-500/40 hover:text-red-500 transition"
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -154,7 +157,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                     {/* Banner */}
                     <div>
                         <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                            Banner <span className="opacity-60 normal-case">(max {BANNER_MAX_MB} MB · 1600×400 recommended)</span>
+                            {t("profile.banner")} <span className="opacity-60 normal-case">{t("profile.bannerHint", { mb: BANNER_MAX_MB })}</span>
                         </label>
                         <div
                             className="relative h-28 overflow-hidden border border-token group cursor-pointer"
@@ -170,7 +173,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                             ) : null}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition grid place-items-center">
                 <span className="text-white text-[12px] font-semibold px-3 py-1.5 bg-black/50">
-                  {bannerUploading ? "Uploading…" : form.bannerUrl ? "Change banner" : "Upload banner"}
+                  {bannerUploading ? t("profile.uploading") : form.bannerUrl ? t("profile.changeBanner") : t("profile.uploadBanner")}
                 </span>
                             </div>
                             {bannerUploading && (
@@ -193,7 +196,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                                 onClick={() => set("bannerUrl", "")}
                                 className="mt-1.5 text-[11.5px] text-dim hover:text-red-500 transition"
                             >
-                                Remove banner
+                                {t("profile.removeBanner")}
                             </button>
                         )}
                         {bannerErr && (
@@ -219,7 +222,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                             )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition grid place-items-center">
                 <span className="text-[10px] text-white font-semibold">
-                  {avatarUploading ? "…" : "Change"}
+                  {avatarUploading ? "…" : t("profile.change")}
                 </span>
                             </div>
                             {avatarUploading && (
@@ -231,7 +234,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                         </div>
                         <div className="flex-1">
                             <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                                Avatar <span className="opacity-60 normal-case">(max {AVATAR_MAX_MB} MB · square)</span>
+                                {t("profile.avatar")} <span className="opacity-60 normal-case">{t("profile.avatarHint", { mb: AVATAR_MAX_MB })}</span>
                             </label>
                             <button
                                 type="button"
@@ -239,7 +242,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                                 disabled={avatarUploading}
                                 className="btn-secondary !py-2 !px-3.5 !text-[12.5px]"
                             >
-                                {avatarUploading ? "Uploading…" : "Choose image"}
+                                {avatarUploading ? t("profile.uploading") : t("profile.chooseImage")}
                             </button>
                             <input
                                 ref={avatarInputRef}
@@ -252,9 +255,9 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                                 <button
                                     type="button"
                                     onClick={() => set("avatarUrl", "")}
-                                    className="ml-2 text-[11.5px] text-dim hover:text-red-500 transition"
+                                    className="ms-2 text-[11.5px] text-dim hover:text-red-500 transition"
                                 >
-                                    Remove
+                                    {t("profile.remove")}
                                 </button>
                             )}
                             {avatarErr && (
@@ -266,7 +269,7 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                     {/* Name */}
                     <div>
                         <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                            Display name
+                            {t("profile.displayName")}
                         </label>
                         <input
                             value={form.displayName}
@@ -279,14 +282,14 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                     {/* Bio */}
                     <div>
                         <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                            Bio <span className="opacity-60 normal-case">({form.bio.length}/500)</span>
+                            {t("profile.bio")} <span className="opacity-60 normal-case">({form.bio.length}/500)</span>
                         </label>
                         <textarea
                             value={form.bio}
                             onChange={(e) => set("bio", e.target.value)}
                             maxLength={500}
                             rows={3}
-                            placeholder="Tell other builders about yourself…"
+                            placeholder={t("profile.bioPlaceholder")}
                             className={inputCls + " resize-none"}
                         />
                     </div>
@@ -295,19 +298,19 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                                Location
+                                {t("profile.location")}
                             </label>
                             <input
                                 value={form.location}
                                 onChange={(e) => set("location", e.target.value)}
-                                placeholder="Riyadh, Saudi Arabia"
+                                placeholder={t("profile.locationPlaceholder")}
                                 maxLength={100}
                                 className={inputCls}
                             />
                         </div>
                         <div>
                             <label className="text-[11px] uppercase tracking-wider text-dim block mb-1.5">
-                                Website
+                                {t("profile.website")}
                             </label>
                             <input
                                 value={form.websiteUrl}
@@ -328,14 +331,14 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                         disabled={saving}
                         className="btn-secondary !py-2 !px-4 !text-[13px]"
                     >
-                        Cancel
+                        {t("profile.cancel")}
                     </button>
                     <button
                         type="submit"
                         disabled={saving || avatarUploading || bannerUploading}
                         className="btn-primary !py-2 !px-4 !text-[13px] disabled:opacity-50"
                     >
-                        {saving ? "Saving…" : "Save changes"}
+                        {saving ? t("profile.saving") : t("profile.saveChanges")}
                     </button>
                 </div>
             </form>

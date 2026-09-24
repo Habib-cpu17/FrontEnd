@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { adminListUsers, adminUpdateUserRole } from "../../services/adminService";
 import { useMe } from "../../hooks/useMe";
+import { useLang } from "../../context/LanguageContext";
 
 export default function UsersTab() {
+    const { t, n } = useLang();
     const { me } = useMe();
     const [data, setData] = useState(null);
     const [page, setPage] = useState(0);
@@ -22,8 +24,15 @@ export default function UsersTab() {
         load();
     }, [load]);
 
+    const roleLabel = (role) => {
+        if (role === "ADMIN") return t("admin.roleAdmin");
+        if (role === "EDITOR") return t("admin.roleEditor");
+        return t("admin.roleUser");
+    };
+
     const onChangeRole = async (user, role) => {
-        if (!confirm(`Change ${user.email}'s role to ${role}?`)) return;
+        if (!confirm(t("admin.changeRoleConfirm", { email: user.email, role: roleLabel(role) })))
+            return;
         setBusyId(user.id);
         try {
             await adminUpdateUserRole(user.id, role);
@@ -37,7 +46,7 @@ export default function UsersTab() {
 
     return (
         <div className="space-y-5">
-            {loading && <p className="text-dim text-[13px]">Loading…</p>}
+            {loading && <p className="text-dim text-[13px]">{t("misc.loading")}</p>}
             {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-3 text-[13px] text-red-500">
                     {error}
@@ -62,7 +71,9 @@ export default function UsersTab() {
                                     <div className="text-[11.5px] text-dim truncate">{u.email}</div>
                                 </div>
                                 <div className="text-[12px] text-dim font-mono shrink-0 hidden sm:block">
-                                    {u.buildCount} build{u.buildCount === 1 ? "" : "s"}
+                                    {t(u.buildCount === 1 ? "admin.build" : "admin.builds", {
+                                        count: n(u.buildCount),
+                                    })}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                   <span
@@ -72,7 +83,7 @@ export default function UsersTab() {
                               : "bg-page border border-token text-dim"
                       }`}
                   >
-                    {u.role}
+                    {roleLabel(u.role)}
                   </span>
                                     {me?.id !== u.id && (
                                         <button
@@ -83,14 +94,16 @@ export default function UsersTab() {
                                             }
                                             className="text-[11.5px] border border-token px-2.5 py-1 text-dim hover:text-accent hover:border-[color:var(--accent)]/40 transition disabled:opacity-50"
                                         >
-                                            {u.role === "ADMIN" ? "Demote" : "Promote"}
+                                            {u.role === "ADMIN" ? t("admin.demote") : t("admin.promote")}
                                         </button>
                                     )}
                                 </div>
                             </div>
                         ))}
                         {data.content.length === 0 && (
-                            <div className="p-8 text-center text-dim text-[13px]">No users found.</div>
+                            <div className="p-8 text-center text-dim text-[13px]">
+                                {t("admin.noUsers")}
+                            </div>
                         )}
                     </div>
 
@@ -102,7 +115,7 @@ export default function UsersTab() {
                                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Prev
+                                {t("misc.prev")}
                             </button>
                             <span className="text-[13px] text-dim font-mono">
                 {data.number + 1} / {data.totalPages}
@@ -113,7 +126,7 @@ export default function UsersTab() {
                                 onClick={() => setPage((p) => p + 1)}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Next
+                                {t("misc.next")}
                             </button>
                         </div>
                     )}

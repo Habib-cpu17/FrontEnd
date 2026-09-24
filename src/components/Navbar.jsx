@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 import { useMe } from "../hooks/useMe";
 import { toAbsoluteUrl } from "../services/uploadService";
 import ThemeToggle from "./ThemeToggle";
+import LanguageToggle from "./LanguageToggle";
 import SearchBar from "./SearchBar";
 
 const linkClass = ({ isActive }) =>
@@ -13,6 +15,7 @@ const linkClass = ({ isActive }) =>
 
 export default function Navbar() {
     const { firebaseUser, logout } = useAuth();
+    const { t } = useLang();
     const { me } = useMe();
     const navigate = useNavigate();
     const location = useLocation();
@@ -58,20 +61,21 @@ export default function Navbar() {
                         </svg>
                     </div>
                     <span className="font-display font-bold tracking-tight text-[16px] hidden sm:inline">
-            Setup Builder
+            {t("nav.brand")}
           </span>
                 </Link>
 
                 {!hideSearch && <SearchBar className="hidden lg:flex" />}
 
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ms-auto flex items-center gap-2">
+                    <LanguageToggle />
                     <ThemeToggle />
                     {firebaseUser ? (
                         <>
                             <Link
                                 to="/profile"
                                 className="hidden sm:flex items-center gap-2 text-[12.5px] text-dim hover:text-body transition"
-                                title="View profile"
+                                title={t("nav.viewProfile")}
                             >
                 <span
                     className="w-7 h-7 shrink-0 grid place-items-center text-white font-display font-bold text-[11.5px] overflow-hidden"
@@ -95,7 +99,7 @@ export default function Navbar() {
                                 onClick={onLogout}
                                 className="text-[12.5px] text-dim hover:text-pink transition px-2"
                             >
-                                Log out
+                                {t("nav.logOut")}
                             </button>
                         </>
                     ) : (
@@ -104,10 +108,10 @@ export default function Navbar() {
                                 to="/login"
                                 className="hidden sm:inline text-[13px] text-dim hover:text-body transition px-3"
                             >
-                                Sign in
+                                {t("nav.signIn")}
                             </Link>
                             <Link to="/register" className="btn-yellow !py-2 !px-4 !text-[13px]">
-                                GET STARTED
+                                {t("nav.getStarted")}
                             </Link>
                         </>
                     )}
@@ -116,17 +120,17 @@ export default function Navbar() {
 
             <div className="hidden md:block border-t border-token">
                 <div className="max-w-7xl mx-auto px-6 h-11 flex items-center gap-1">
-                    <NavLink to="/components" className={linkClass}>Components</NavLink>
-                    <NavLink to="/builder" className={linkClass}>Builder</NavLink>
-                    <NavLink to="/my-builds" className={linkClass}>My Builds</NavLink>
-                    <NavLink to="/public-builds" className={linkClass}>Community</NavLink>
+                    <NavLink to="/components" className={linkClass}>{t("nav.components")}</NavLink>
+                    <NavLink to="/builder" className={linkClass}>{t("nav.builder")}</NavLink>
+                    <NavLink to="/my-builds" className={linkClass}>{t("nav.myBuilds")}</NavLink>
+                    <NavLink to="/public-builds" className={linkClass}>{t("nav.community")}</NavLink>
                     {firebaseUser && (
-                        <NavLink to="/profile" className={linkClass}>Profile</NavLink>
+                        <NavLink to="/profile" className={linkClass}>{t("nav.profile")}</NavLink>
                     )}
                     {me?.role === "ADMIN" && (
-                        <NavLink to="/admin" className={linkClass}>Admin</NavLink>
+                        <NavLink to="/admin" className={linkClass}>{t("nav.admin")}</NavLink>
                     )}
-                    <span className="ml-auto text-[12px] text-dim">Build. Compare. Share.</span>
+                    <span className="ms-auto text-[12px] text-dim">{t("nav.tagline")}</span>
                 </div>
             </div>
         </header>

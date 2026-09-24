@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 import ThemeToggle from "../components/ThemeToggle";
 
 export default function RegisterPage() {
+    const { t } = useLang();
     const { register } = useAuth();
     const navigate = useNavigate();
     const [displayName, setDisplayName] = useState("");
@@ -20,7 +22,7 @@ export default function RegisterPage() {
             await register(email, password, displayName);
             navigate("/dashboard");
         } catch (err) {
-            setError(err.message || "Registration failed");
+            setError(err.message || t("auth.registrationFailed"));
         } finally {
             setBusy(false);
         }
@@ -42,7 +44,7 @@ export default function RegisterPage() {
                             <div className="w-3 h-3 rounded-sm bg-[color:var(--bg)]" />
                         </div>
                         <span className="font-display font-bold tracking-tight text-[15px]">
-              Setup Builder
+              {t("auth.brand")}
             </span>
                     </Link>
 
@@ -51,9 +53,9 @@ export default function RegisterPage() {
                         className="rounded-2xl border border-token bg-surface p-8 space-y-5"
                     >
                         <div>
-                            <h1 className="font-display text-2xl font-bold">Create your account</h1>
+                            <h1 className="font-display text-2xl font-bold">{t("auth.createAccount")}</h1>
                             <p className="text-[13px] text-dim mt-1">
-                                Free. No credit card. Start building in seconds.
+                                {t("auth.registerSubtitle")}
                             </p>
                         </div>
 
@@ -65,29 +67,29 @@ export default function RegisterPage() {
 
                         <div className="space-y-3">
                             <div>
-                                <label className="text-[12px] text-dim mb-1.5 block">Display name</label>
+                                <label className="text-[12px] text-dim mb-1.5 block">{t("auth.displayName")}</label>
                                 <input
                                     type="text"
                                     value={displayName}
                                     onChange={(e) => setDisplayName(e.target.value)}
                                     className={inputCls}
-                                    placeholder="Your name"
+                                    placeholder={t("auth.namePlaceholder")}
                                 />
                             </div>
                             <div>
-                                <label className="text-[12px] text-dim mb-1.5 block">Email</label>
+                                <label className="text-[12px] text-dim mb-1.5 block">{t("auth.email")}</label>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     className={inputCls}
-                                    placeholder="you@example.com"
+                                    placeholder={t("auth.emailPlaceholder")}
                                 />
                             </div>
                             <div>
                                 <label className="text-[12px] text-dim mb-1.5 block">
-                                    Password <span className="opacity-50">(min 6 chars)</span>
+                                    {t("auth.password")} <span className="opacity-50">{t("auth.passwordMin")}</span>
                                 </label>
                                 <input
                                     type="password"
@@ -96,25 +98,25 @@ export default function RegisterPage() {
                                     required
                                     minLength={6}
                                     className={inputCls}
-                                    placeholder="••••••••"
+                                    placeholder={t("auth.passwordPlaceholder")}
                                 />
                             </div>
                         </div>
 
                         <button type="submit" disabled={busy} className="btn-primary w-full justify-center disabled:opacity-50">
-                            {busy ? "Creating account…" : "Create account"}
+                            {busy ? t("auth.creatingAccount") : t("auth.createAccountBtn")}
                         </button>
 
                         <p className="text-[13px] text-dim text-center">
-                            Already have an account?{" "}
+                            {t("auth.alreadyHaveAccount")}{" "}
                             <Link to="/login" className="text-accent hover:underline">
-                                Sign in
+                                {t("auth.signInLink")}
                             </Link>
                         </p>
                     </form>
 
                     <Link to="/" className="block text-center mt-6 text-[12.5px] text-dim hover:opacity-80 transition">
-                        ← Back to home
+                        {t("auth.backHome")}
                     </Link>
                 </div>
             </div>

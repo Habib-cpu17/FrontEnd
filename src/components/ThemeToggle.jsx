@@ -1,7 +1,9 @@
 import { useTheme } from "../context/ThemeContext";
+import { useLang } from "../context/LanguageContext";
 
 export default function ThemeToggle({ className = "" }) {
     const { theme, toggle } = useTheme();
+    const { t } = useLang();
     const isDark = theme === "dark";
 
     return (
@@ -9,7 +11,7 @@ export default function ThemeToggle({ className = "" }) {
             type="button"
             data-shape="rounded"
             onClick={toggle}
-            aria-label="Toggle theme"
+            aria-label={t("misc.themeToggle")}
             className={`relative w-9 h-9 grid place-items-center transition border border-token hover:border-[color:var(--purple)] ${className}`}
         >
             {isDark ? (

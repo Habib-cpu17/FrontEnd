@@ -4,21 +4,33 @@ import { listComponents } from "../services/componentService";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import Reveal from "../components/Reveal";
+import { useLang } from "../context/LanguageContext";
 
-const CATEGORIES = [
-    { key: "", label: "All" },
-    { key: "CPU", label: "CPU" },
-    { key: "GPU", label: "GPU" },
-    { key: "MOTHERBOARD", label: "Motherboard" },
-    { key: "RAM", label: "RAM" },
-    { key: "STORAGE", label: "Storage" },
-    { key: "POWER_SUPPLY", label: "PSU" },
-    { key: "CASE", label: "Case" },
+const CATEGORIES = (t) => [
+    { key: "", label: t("catalog.catAll") },
+    { key: "CPU", label: t("catalog.catCPU") },
+    { key: "GPU", label: t("catalog.catGPU") },
+    { key: "MOTHERBOARD", label: t("catalog.catMotherboard") },
+    { key: "RAM", label: t("catalog.catRAM") },
+    { key: "STORAGE", label: t("catalog.catStorage") },
+    { key: "POWER_SUPPLY", label: t("catalog.catPSU") },
+    { key: "CASE", label: t("catalog.catCase") },
 ];
+
+const CATEGORY_LABEL_KEY = {
+    CPU: "catalog.catCPU",
+    GPU: "catalog.catGPU",
+    MOTHERBOARD: "catalog.catMotherboard",
+    RAM: "catalog.catRAM",
+    STORAGE: "catalog.catStorage",
+    POWER_SUPPLY: "catalog.catPSU",
+    CASE: "catalog.catCase",
+};
 
 export default function ComponentsPage() {
     const { firebaseUser } = useAuth();
     const toast = useToast();
+    const { t, n } = useLang();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [category, setCategory] = useState(searchParams.get("category") || "");
@@ -43,10 +55,10 @@ export default function ComponentsPage() {
         setError("");
         listComponents({ category, search, page, size: 24 })
             .then((res) => !cancelled && setData(res))
-            .catch((err) => !cancelled && setError(err.message || "Failed to load components"))
+            .catch((err) => !cancelled && setError(err.message || t("catalog.loadFailed")))
             .finally(() => !cancelled && setLoading(false));
         return () => { cancelled = true; };
-    }, [category, search, page]);
+    }, [category, search, page, t]);
 
     const updateUrl = useCallback(
         (nextCat, nextSearch) => {
@@ -77,7 +89,7 @@ export default function ComponentsPage() {
 
     const addToDraft = (component) => {
         if (!firebaseUser) {
-            toast.info("Sign in to add components to your build.");
+            toast.info(t("catalog.signInToAdd"));
             return;
         }
         const raw = sessionStorage.getItem("draftComponents");
@@ -92,7 +104,7 @@ export default function ComponentsPage() {
         sessionStorage.setItem("draftComponents", JSON.stringify(filtered));
         window.dispatchEvent(new Event("draft-updated"));
         setAddedId(component.id);
-        toast.success(`${component.name} added to your build`);
+        toast.success(t("catalog.addedToast", { name: component.name }));
         setTimeout(() => setAddedId(null), 1500);
     };
 
@@ -115,13 +127,13 @@ export default function ComponentsPage() {
                     <div className="relative max-w-2xl">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/25 backdrop-blur text-white text-[11px] font-bold uppercase tracking-widest mb-4">
                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                            Shop Components
+                            {t("catalog.heroBadge")}
                         </div>
                         <h1 className="font-display text-4xl md:text-5xl font-bold text-white leading-tight mb-3">
-                            Everything you need<br />to build the rig.
+                            {t("catalog.heroTitleLine1")}<br />{t("catalog.heroTitleLine2")}
                         </h1>
                         <p className="text-[14.5px] text-white/85 max-w-lg">
-                            {data?.totalElements ?? "43"} parts across 7 categories, live SAR pricing, verified compatibility.
+                            {t("catalog.heroSubtitle", { count: n(data?.totalElements ?? 43) })}
                         </p>
                     </div>
                 </div>
@@ -130,7 +142,7 @@ export default function ComponentsPage() {
             {/* Category pills */}
             <Reveal delay={80}>
                 <div className="flex flex-wrap items-center gap-2">
-                    {CATEGORIES.map((c) => {
+                    {CATEGORIES(t).map((c) => {
                         const active = category === c.key;
                         return (
                             <button
@@ -159,7 +171,7 @@ export default function ComponentsPage() {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-                                placeholder="Search components…"
+                                placeholder={t("catalog.searchPlaceholder")}
                                 className="flex-1 h-full bg-transparent px-4 text-[13px] text-body placeholder:text-dim focus:outline-none"
                             />
                         </div>
@@ -167,7 +179,7 @@ export default function ComponentsPage() {
                             type="button"
                             onClick={handleSearchSubmit}
                             className="search-btn"
-                            aria-label="Search"
+                            aria-label={t("catalog.searchButton")}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                 <circle cx="11" cy="11" r="7" />
@@ -179,14 +191,14 @@ export default function ComponentsPage() {
                     {search && (
                         <div className="flex items-center gap-2 text-[12.5px] text-dim">
               <span>
-                Results for <span className="text-body font-semibold">"{search}"</span>
+                {t("catalog.resultsFor")} <span className="text-body font-semibold">"{search}"</span>
               </span>
                             <button
                                 type="button"
                                 onClick={clearSearch}
                                 className="px-2 py-1 border border-token text-dim hover:text-red-500 hover:border-red-500/40 transition text-[11px]"
                             >
-                                CLEAR
+                                {t("catalog.clear")}
                             </button>
                         </div>
                     )}
@@ -229,12 +241,12 @@ export default function ComponentsPage() {
                                         ) : (
                                             <div className="w-full h-full grid place-items-center">
                                                 <div className="font-display text-5xl font-bold opacity-15" style={{ color: "var(--purple)" }}>
-                                                    {c.category.replace("_", " ").slice(0, 3)}
+                                                    {t(CATEGORY_LABEL_KEY[c.category] ?? c.category.replace("_", " ")).slice(0, 3)}
                                                 </div>
                                             </div>
                                         )}
                                         <span className="absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 gradient-brand text-white uppercase tracking-wider">
-                      {c.category.replace("_", " ")}
+                      {t(CATEGORY_LABEL_KEY[c.category] ?? c.category.replace("_", " "))}
                     </span>
                                     </div>
 
@@ -256,10 +268,10 @@ export default function ComponentsPage() {
 
                                         <div className="mt-auto pt-4 flex items-end justify-between gap-2">
                                             <div>
-                                                <div className="text-[10px] uppercase tracking-wider text-dim font-semibold">Price</div>
+                                                <div className="text-[10px] uppercase tracking-wider text-dim font-semibold">{t("catalog.price")}</div>
                                                 <div className="font-display font-bold text-[16px] text-pink">
-                                                    {Number(c.price).toLocaleString()}
-                                                    <span className="text-[11px] font-normal text-dim ml-1">SAR</span>
+                                                    {n(c.price)}
+                                                    <span className="text-[11px] font-normal text-dim ms-1">SAR</span>
                                                 </div>
                                             </div>
                                             <button
@@ -272,7 +284,7 @@ export default function ComponentsPage() {
                                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                                                             <polyline points="20 6 9 17 4 12" />
                                                         </svg>
-                                                        ADDED
+                                                        {t("catalog.added")}
                                                     </>
                                                 ) : (
                                                     <>
@@ -280,7 +292,7 @@ export default function ComponentsPage() {
                                                             <line x1="12" y1="5" x2="12" y2="19" />
                                                             <line x1="5" y1="12" x2="19" y2="12" />
                                                         </svg>
-                                                        ADD
+                                                        {t("catalog.add")}
                                                     </>
                                                 )}
                                             </button>
@@ -293,7 +305,7 @@ export default function ComponentsPage() {
 
                     {data.content.length === 0 && (
                         <div className="border border-dashed border-token p-12 text-center">
-                            <p className="text-dim text-sm">No components match your filters.</p>
+                            <p className="text-dim text-sm">{t("catalog.noResults")}</p>
                         </div>
                     )}
 
@@ -305,10 +317,10 @@ export default function ComponentsPage() {
                                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                                 className="btn-secondary !py-2 !px-4 !text-[13px] disabled:opacity-30"
                             >
-                                Prev
+                                {t("misc.prev")}
                             </button>
                             <span className="text-[13px] text-dim font-mono">
-                {data.number + 1} / {data.totalPages}
+                {n(data.number + 1)} / {n(data.totalPages)}
               </span>
                             <button
                                 type="button"
@@ -316,7 +328,7 @@ export default function ComponentsPage() {
                                 onClick={() => setPage((p) => p + 1)}
                                 className="btn-secondary !py-2 !px-4 !text-[13px] disabled:opacity-30"
                             >
-                                Next
+                                {t("misc.next")}
                             </button>
                         </div>
                     )}
@@ -332,14 +344,14 @@ export default function ComponentsPage() {
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <div className="font-display font-semibold text-[14px] group-hover:text-pink transition">
-                                Ready to assemble?
+                                {t("catalog.ctaTitle")}
                             </div>
                             <div className="text-[12px] text-dim mt-0.5">
-                                Your added parts are saved. Open the Builder to finish your rig.
+                                {t("catalog.ctaText")}
                             </div>
                         </div>
                         <span className="btn-primary !py-2 !px-4 !text-[13px]">
-              Open Builder →
+              {t("catalog.ctaButton")}
             </span>
                     </div>
                 </a>

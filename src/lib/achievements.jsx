@@ -1,17 +1,20 @@
 export const Achievements = {
-    FIRST_BUILD:      { label: "First Steps",     desc: "Create your first build",              icon: "spark", color: "#22d3ee" },
-    BUILDER:          { label: "Builder",         desc: "Create 5 builds",                       icon: "cube",  color: "#8b2ff7" },
-    ARCHITECT:        { label: "Architect",       desc: "Create 10 builds",                      icon: "grid",  color: "#ff1e79" },
-    ENTHUSIAST:       { label: "Enthusiast",      desc: "Create 25 builds",                      icon: "flame", color: "#f59e0b" },
-    PUBLIC_VOICE:     { label: "Public Voice",    desc: "Publish your first build",              icon: "megaphone", color: "#10b981" },
-    COMMUNITY_SHARER: { label: "Community Sharer",desc: "Publish 5 builds",                      icon: "users", color: "#06b6d4" },
-    COMMENTATOR:      { label: "Commentator",     desc: "Write 10 comments",                     icon: "chat",  color: "#a855f7" },
-    WELL_KNOWN:       { label: "Well-Known",      desc: "Receive 10 comments on your builds",    icon: "star",  color: "#f97316" },
-    SITE_ADMIN:       { label: "Site Admin",      desc: "Administrator of Setup Builder",        icon: "shield", color: "#ef4444" },
+    FIRST_BUILD:      { labelKey: "profile.ach.firstBuild",         descKey: "profile.ach.firstBuildDesc",         icon: "spark", color: "#22d3ee" },
+    BUILDER:          { labelKey: "profile.ach.builder",           descKey: "profile.ach.builderDesc",           icon: "cube",  color: "#8b2ff7" },
+    ARCHITECT:        { labelKey: "profile.ach.architect",         descKey: "profile.ach.architectDesc",         icon: "grid",  color: "#ff1e79" },
+    ENTHUSIAST:       { labelKey: "profile.ach.enthusiast",        descKey: "profile.ach.enthusiastDesc",        icon: "flame", color: "#f59e0b" },
+    PUBLIC_VOICE:     { labelKey: "profile.ach.publicVoice",       descKey: "profile.ach.publicVoiceDesc",       icon: "megaphone", color: "#10b981" },
+    COMMUNITY_SHARER: { labelKey: "profile.ach.communitySharer",   descKey: "profile.ach.communitySharerDesc",   icon: "users", color: "#06b6d4" },
+    COMMENTATOR:      { labelKey: "profile.ach.commentator",       descKey: "profile.ach.commentatorDesc",       icon: "chat",  color: "#a855f7" },
+    WELL_KNOWN:       { labelKey: "profile.ach.wellKnown",         descKey: "profile.ach.wellKnownDesc",         icon: "star",  color: "#f97316" },
+    SITE_ADMIN:       { labelKey: "profile.ach.siteAdmin",         descKey: "profile.ach.siteAdminDesc",         icon: "shield", color: "#ef4444" },
 };
 
-export function getAchievement(key) {
-    return Achievements[key] || { label: key, desc: "", icon: "spark", color: "#8b2ff7" };
+export function getAchievement(key, t) {
+    const a = Achievements[key];
+    if (!a) return { label: t ? t("profile.ach.unknown") : key, desc: "", icon: "spark", color: "#8b2ff7" };
+    const translate = t || ((s) => s);
+    return { ...a, label: translate(a.labelKey), desc: translate(a.descKey) };
 }
 
 export const ACHIEVEMENT_ICONS = {

@@ -51,6 +51,10 @@ body {
 
 .font-display { font-family: "Space Grotesk", "Inter", sans-serif; letter-spacing: -0.02em; }
 
+/* ─── Arabic (RTL) typography ─── */
+html[lang="ar"] body { font-family: "Tajawal", "Inter", system-ui, sans-serif; }
+html[lang="ar"] .font-display { font-family: "Tajawal", "Space Grotesk", sans-serif; letter-spacing: 0; }
+
 /* ─── Utility classes ─── */
 .bg-page { background: var(--bg); }
 .bg-page-2 { background: var(--bg-2); }
@@ -187,6 +191,20 @@ button[data-shape="round"]   { border-radius: 9999px !important; }
     transition: filter 0.2s ease;
 }
 .search-btn:hover { filter: brightness(1.08); }
+
+/* RTL: mirror the angled cut so the seam lines up when order reverses */
+html[dir="rtl"] .search-input-wrap {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 24px 100%);
+}
+html[dir="rtl"] .search-btn {
+    margin-left: 0;
+    margin-right: -1px;
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 100%, 24px 100%);
+}
+html[dir="rtl"] .search-cat {
+    border-left: none;
+    border-right: 1px solid var(--border);
+}
 
 /* ═══════════════ BACKGROUND PATTERNS ═══════════════ */
 .bg-stripes {

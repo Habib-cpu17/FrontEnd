@@ -5,6 +5,7 @@ import {
     adminSetComponentActive,
     adminUpdateComponent,
 } from "../../services/adminService";
+import { useLang } from "../../context/LanguageContext";
 
 const CATEGORIES = ["CPU", "GPU", "MOTHERBOARD", "RAM", "STORAGE", "POWER_SUPPLY", "CASE"];
 
@@ -24,6 +25,7 @@ const inputCls =
     "w-full px-3 py-2 text-[13.5px] bg-page border border-token text-body placeholder:text-dim focus:outline-none focus:border-[color:var(--accent)] focus:ring-2 focus:ring-[color:var(--accent)]/15 transition";
 
 export default function ComponentsTab() {
+    const { t, n } = useLang();
     const [data, setData] = useState(null);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -123,7 +125,7 @@ export default function ComponentsTab() {
                     onClick={openNew}
                     className="btn-primary !py-2 !px-4 !text-[13px]"
                 >
-                    + New component
+                    {t("admin.addComponent")}
                 </button>
             </div>
 
@@ -159,7 +161,7 @@ export default function ComponentsTab() {
                                     </div>
                                 </div>
                                 <div className="text-[13px] font-mono text-accent shrink-0">
-                                    {Number(c.price).toLocaleString()} SAR
+                                    {n(c.price)} SAR
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                     <button
@@ -167,20 +169,22 @@ export default function ComponentsTab() {
                                         onClick={() => openEdit(c)}
                                         className="text-[11.5px] border border-token px-2.5 py-1 text-dim hover:text-accent hover:border-[color:var(--accent)]/40 transition"
                                     >
-                                        Edit
+                                        {t("admin.edit")}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => onToggleActive(c)}
                                         className="text-[11.5px] border border-token px-2.5 py-1 text-dim hover:text-red-500 hover:border-red-500/40 transition"
                                     >
-                                        Deactivate
+                                        {t("admin.deactivate")}
                                     </button>
                                 </div>
                             </div>
                         ))}
                         {data.content.length === 0 && (
-                            <div className="p-8 text-center text-dim text-[13px]">No components yet.</div>
+                            <div className="p-8 text-center text-dim text-[13px]">
+                                {t("admin.noComponents")}
+                            </div>
                         )}
                     </div>
 
@@ -192,7 +196,7 @@ export default function ComponentsTab() {
                                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Prev
+                                {t("misc.prev")}
                             </button>
                             <span className="text-[13px] text-dim font-mono">
                 {data.number + 1} / {data.totalPages}
@@ -203,7 +207,7 @@ export default function ComponentsTab() {
                                 onClick={() => setPage((p) => p + 1)}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Next
+                                {t("misc.next")}
                             </button>
                         </div>
                     )}
@@ -221,7 +225,7 @@ export default function ComponentsTab() {
                         className="w-full max-w-lg border border-token bg-surface p-6 space-y-4 max-h-[90vh] overflow-auto"
                     >
                         <h2 className="font-display text-lg font-bold">
-                            {editing.id ? "Edit component" : "New component"}
+                            {editing.id ? t("admin.editComponent") : t("admin.newComponent")}
                         </h2>
 
                         {formError && (
@@ -232,7 +236,9 @@ export default function ComponentsTab() {
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="col-span-2">
-                                <label className="text-[11px] uppercase tracking-wider text-dim">Name</label>
+                                <label className="text-[11px] uppercase tracking-wider text-dim">
+                                    {t("admin.fieldName")}
+                                </label>
                                 <input
                                     required
                                     value={editing.name}
@@ -241,7 +247,9 @@ export default function ComponentsTab() {
                                 />
                             </div>
                             <div>
-                                <label className="text-[11px] uppercase tracking-wider text-dim">Category</label>
+                                <label className="text-[11px] uppercase tracking-wider text-dim">
+                                    {t("admin.fieldCategory")}
+                                </label>
                                 <select
                                     value={editing.category}
                                     onChange={(e) => setEditing({ ...editing, category: e.target.value })}
@@ -256,7 +264,7 @@ export default function ComponentsTab() {
                             </div>
                             <div>
                                 <label className="text-[11px] uppercase tracking-wider text-dim">
-                                    Price (SAR)
+                                    {t("admin.fieldPrice")}
                                 </label>
                                 <input
                                     type="number"
@@ -270,7 +278,9 @@ export default function ComponentsTab() {
                                 />
                             </div>
                             <div>
-                                <label className="text-[11px] uppercase tracking-wider text-dim">Brand</label>
+                                <label className="text-[11px] uppercase tracking-wider text-dim">
+                                    {t("admin.fieldBrand")}
+                                </label>
                                 <input
                                     value={editing.brand}
                                     onChange={(e) => setEditing({ ...editing, brand: e.target.value })}
@@ -278,7 +288,9 @@ export default function ComponentsTab() {
                                 />
                             </div>
                             <div>
-                                <label className="text-[11px] uppercase tracking-wider text-dim">Model</label>
+                                <label className="text-[11px] uppercase tracking-wider text-dim">
+                                    {t("admin.fieldModel")}
+                                </label>
                                 <input
                                     value={editing.model}
                                     onChange={(e) => setEditing({ ...editing, model: e.target.value })}
@@ -287,19 +299,19 @@ export default function ComponentsTab() {
                             </div>
                             <div className="col-span-2">
                                 <label className="text-[11px] uppercase tracking-wider text-dim">
-                                    Specs{" "}
-                                    <span className="opacity-60 normal-case">(comma-separated, key=value)</span>
+                                    {t("admin.fieldSpecs")}{" "}
+                                    <span className="opacity-60 normal-case">{t("admin.specsHint")}</span>
                                 </label>
                                 <input
                                     value={editing.specs}
                                     onChange={(e) => setEditing({ ...editing, specs: e.target.value })}
-                                    placeholder="socket=AM5, cores=8, tdp=120"
+                                    placeholder={t("admin.specsPlaceholder")}
                                     className={inputCls + " mt-1"}
                                 />
                             </div>
                             <div className="col-span-2">
                                 <label className="text-[11px] uppercase tracking-wider text-dim">
-                                    Image URL
+                                    {t("admin.fieldImageUrl")}
                                 </label>
                                 <input
                                     value={editing.imageUrl}
@@ -316,14 +328,14 @@ export default function ComponentsTab() {
                                 disabled={saving}
                                 className="btn-secondary !py-2 !px-4 !text-[13px]"
                             >
-                                Cancel
+                                {t("admin.cancel")}
                             </button>
                             <button
                                 type="submit"
                                 disabled={saving}
                                 className="btn-primary !py-2 !px-4 !text-[13px] disabled:opacity-50"
                             >
-                                {saving ? "Saving…" : "Save"}
+                                {saving ? t("admin.saving") : t("admin.save")}
                             </button>
                         </div>
                     </form>

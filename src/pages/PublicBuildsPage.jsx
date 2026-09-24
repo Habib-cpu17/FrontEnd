@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useLang } from "../context/LanguageContext";
 import { listPublicBuilds } from "../services/buildService";
 import Reveal from "../components/Reveal";
 
 export default function PublicBuildsPage() {
+    const { t, n } = useLang();
     const [data, setData] = useState(null);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ export default function PublicBuildsPage() {
         setLoading(true);
         listPublicBuilds(page, 12)
             .then((res) => !cancelled && setData(res))
-            .catch((err) => !cancelled && setError(err.message))
+            .catch((err) => !cancelled && setError(err.message || t("community.errorLoading")))
             .finally(() => !cancelled && setLoading(false));
         return () => { cancelled = true; };
     }, [page]);
@@ -23,10 +25,10 @@ export default function PublicBuildsPage() {
         <div className="space-y-8">
             <Reveal>
                 <div>
-                    <div className="eyebrow mb-2">Community</div>
-                    <h1 className="font-display text-3xl font-bold">Public Builds</h1>
+                    <div className="eyebrow mb-2">{t("community.community")}</div>
+                    <h1 className="font-display text-3xl font-bold">{t("community.title")}</h1>
                     <p className="text-[13.5px] text-dim mt-1.5">
-                        Public PC builds shared by other users.
+                        {t("community.subtitle")}
                     </p>
                 </div>
             </Reveal>
@@ -48,12 +50,12 @@ export default function PublicBuildsPage() {
             {!loading && data && data.content.length === 0 && (
                 <Reveal>
                     <div className="border border-dashed border-token p-12 text-center">
-                        <p className="text-dim text-sm">No public builds yet. Be the first!</p>
+                        <p className="text-dim text-sm">{t("community.emptyState")}</p>
                         <Link
                             to="/builder"
                             className="inline-block mt-4 text-accent text-[13.5px] hover:underline"
                         >
-                            Start a build →
+                            {t("community.emptyCta")} →
                         </Link>
                     </div>
                 </Reveal>
@@ -70,17 +72,19 @@ export default function PublicBuildsPage() {
                                             {b.name}
                                         </h3>
                                         <span className="text-[10px] font-mono text-accent shrink-0 mt-0.5">
-                      {b.components?.length || 0} parts
+                      {b.components?.length === 1
+                          ? t("community.parts_one")
+                          : t("community.parts_other", { count: b.components?.length || 0 })}
                     </span>
                                     </div>
                                     <div className="text-[11.5px] text-dim mb-3">
-                                        by{" "}
+                                        {t("community.by")}{" "}
                                         <Link
                                             to={`/users/${b.userId}`}
                                             className="hover:text-pink transition"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            {b.userDisplayName || "Anonymous"}
+                                            {b.userDisplayName || t("community.anonymous")}
                                         </Link>
                                     </div>
                                     {b.description && (
@@ -93,7 +97,7 @@ export default function PublicBuildsPage() {
                       #{String(b.id).padStart(4, "0")}
                     </span>
                                         <span className="font-display font-semibold text-[13.5px] text-accent">
-                      {Number(b.totalPrice).toLocaleString()} SAR
+                      {n(b.totalPrice)} SAR
                     </span>
                                     </div>
                                 </Link>
@@ -109,10 +113,10 @@ export default function PublicBuildsPage() {
                                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Prev
+                                {t("misc.prev")}
                             </button>
                             <span className="text-[13px] text-dim font-mono">
-                {data.number + 1} / {Math.max(1, data.totalPages)}
+                {n(data.number + 1)} / {n(Math.max(1, data.totalPages))}
               </span>
                             <button
                                 type="button"
@@ -120,7 +124,7 @@ export default function PublicBuildsPage() {
                                 onClick={() => setPage((p) => p + 1)}
                                 className="btn-secondary !py-2 !px-3.5 !text-[13px] disabled:opacity-30"
                             >
-                                Next
+                                {t("misc.next")}
                             </button>
                         </div>
                     )}

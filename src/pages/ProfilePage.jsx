@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 import { useMe } from "../hooks/useMe";
 import { getProfile } from "../services/userService";
 import { toAbsoluteUrl } from "../services/uploadService";
@@ -9,24 +10,13 @@ import Reveal from "../components/Reveal";
 import BackButton from "../components/BackButton";
 import EditProfileModal from "../components/EditProfileModal";
 
-const TABS = [
-    { key: "overview", label: "Overview" },
-    { key: "builds", label: "Builds" },
-    { key: "achievements", label: "Achievements" },
-];
-
-function fmtDate(iso) {
-    if (!iso) return "";
-    return new Date(iso).toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-    });
-}
+const TABS = [{ key: "overview" }, { key: "builds" }, { key: "achievements" }];
 
 export default function ProfilePage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { firebaseUser } = useAuth();
+    const { t, d } = useLang();
     const { me } = useMe();
 
     const isOwn = !id || (me && Number(id) === me.id);
@@ -54,9 +44,9 @@ export default function ProfilePage() {
     if (!firebaseUser && !id) {
         return (
             <div className="text-center py-20">
-                <p className="text-dim mb-4">Sign in to view your profile.</p>
+                <p className="text-dim mb-4">{t("profile.signInToView")}</p>
                 <button onClick={() => navigate("/login")} className="btn-primary">
-                    Sign in
+                    {t("profile.signIn")}
                 </button>
             </div>
         );
@@ -68,6 +58,7 @@ export default function ProfilePage() {
                 <div
                     className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
                     style={{ borderColor: "var(--border)", borderTopColor: "var(--purple)" }}
+                    aria-label={t("misc.loading")}
                 />
             </div>
         );
@@ -75,8 +66,8 @@ export default function ProfilePage() {
 
     if (error) {
         return (
-            <div className="space-y-4">
-                <BackButton label="Back" />
+<div className="space-y-4">
+                <BackButton />
                 <div className="border border-red-500/30 bg-red-500/10 p-5 text-[13px] text-red-500">
                     {error}
                 </div>
@@ -92,7 +83,7 @@ export default function ProfilePage() {
 
     return (
         <div className="space-y-6">
-            <BackButton label="Back" />
+            <BackButton />
 
             {/* ═══ BANNER + AVATAR ═══ */}
             <Reveal>
@@ -148,17 +139,17 @@ export default function ProfilePage() {
                             <div className="flex-1 min-w-0 mt-0 sm:mt-1">
                                 <div className="flex flex-wrap items-center gap-2 mb-1">
                                     <h1 className="font-display text-2xl sm:text-3xl font-bold truncate">
-                                        {profile.displayName || "Anonymous"}
+                                        {profile.displayName || t("profile.anonymous")}
                                     </h1>
                                     {profile.role === "ADMIN" && (
                                         <span className="text-[10.5px] font-mono uppercase tracking-wider px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500">
-                      Admin
+                      {t("profile.admin")}
                     </span>
                                     )}
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-dim">
-                                    <span>Member since {fmtDate(profile.createdAt)}</span>
+                                    <span>{t("profile.memberSince", { date: d(profile.createdAt) })}</span>
                                     {profile.location && (
                                         <>
                                             <span className="opacity-40">·</span>
@@ -208,17 +199,17 @@ export default function ProfilePage() {
                                     onClick={() => setEditOpen(true)}
                                     className="btn-secondary !py-2 !px-4 !text-[13px] shrink-0"
                                 >
-                                    Edit profile
+                                    {t("profile.edit")}
                                 </button>
                             )}
                         </div>
 
                         {/* Stats row */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-5 border-t border-token">
-                            <Stat label="Total builds" value={profile.stats.totalBuilds} />
-                            <Stat label="Public builds" value={profile.stats.publicBuilds} />
-                            <Stat label="Comments written" value={profile.stats.totalComments} />
-                            <Stat label="Comments received" value={profile.stats.commentsReceived} />
+                            <Stat label={t("profile.stat.totalBuilds")} value={profile.stats.totalBuilds} />
+                            <Stat label={t("profile.stat.publicBuilds")} value={profile.stats.publicBuilds} />
+                            <Stat label={t("profile.stat.commentsWritten")} value={profile.stats.totalComments} />
+                            <Stat label={t("profile.stat.commentsReceived")} value={profile.stats.commentsReceived} />
                         </div>
                     </div>
                 </div>
@@ -227,27 +218,27 @@ export default function ProfilePage() {
             {/* ═══ TABS ═══ */}
             <Reveal delay={80}>
                 <div className="flex flex-wrap gap-2 border-b border-token">
-                    {TABS.map((t) => (
+                    {TABS.map((tabItem) => (
                         <button
-                            key={t.key}
+                            key={tabItem.key}
                             type="button"
-                            onClick={() => setTab(t.key)}
+                            onClick={() => setTab(tabItem.key)}
                             className={`relative px-3.5 py-2.5 text-[13.5px] transition ${
-                                tab === t.key ? "text-body font-medium" : "text-dim hover:text-body"
+                                tab === tabItem.key ? "text-body font-medium" : "text-dim hover:text-body"
                             }`}
                         >
-                            {t.label}
-                            {t.key === "achievements" && (
-                                <span className="ml-1.5 text-[11px] font-mono text-dim">
+                            {t("profile.tab." + tabItem.key)}
+                            {tabItem.key === "achievements" && (
+                                <span className="ms-1.5 text-[11px] font-mono text-dim">
                   {achCount}/{totalAchievements}
                 </span>
                             )}
-                            {t.key === "builds" && (
-                                <span className="ml-1.5 text-[11px] font-mono text-dim">
+                            {tabItem.key === "builds" && (
+                                <span className="ms-1.5 text-[11px] font-mono text-dim">
                   {profile.builds.length}
                 </span>
                             )}
-                            {tab === t.key && (
+                            {tab === tabItem.key && (
                                 <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[color:var(--purple)]" />
                             )}
                         </button>
@@ -276,10 +267,11 @@ export default function ProfilePage() {
 /* ═════════════════════════════════════════════ */
 
 function Stat({ label, value }) {
+    const { n } = useLang();
     return (
         <div>
             <div className="font-display text-2xl font-bold">
-                {value.toLocaleString()}
+                {n(value)}
             </div>
             <div className="text-[11px] uppercase tracking-wider text-dim mt-0.5">
                 {label}
@@ -289,6 +281,7 @@ function Stat({ label, value }) {
 }
 
 function OverviewTab({ profile }) {
+    const { t, n } = useLang();
     const topAchievements = profile.achievements.slice(0, 4);
     const recentBuilds = profile.builds.slice(0, 4);
 
@@ -298,12 +291,12 @@ function OverviewTab({ profile }) {
             <Reveal delay={120} className="lg:col-span-2">
                 <div className="border border-token bg-surface p-5">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-display font-semibold">Recent builds</h2>
+                        <h2 className="font-display font-semibold">{t("profile.recentBuilds")}</h2>
                     </div>
 
                     {recentBuilds.length === 0 ? (
                         <div className="border border-dashed border-token p-10 text-center text-dim text-[13px]">
-                            No builds yet.
+                            {t("profile.noBuilds")}
                         </div>
                     ) : (
                         <div className="grid sm:grid-cols-2 gap-3">
@@ -319,20 +312,20 @@ function OverviewTab({ profile }) {
                                         </h3>
                                         {b.isPublic ? (
                                             <span className="text-[9.5px] font-mono uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 px-1.5 py-0.5 shrink-0">
-                        Public
+                        {t("profile.public")}
                       </span>
                                         ) : (
                                             <span className="text-[9.5px] font-mono uppercase tracking-wider bg-surface border border-token text-dim px-1.5 py-0.5 shrink-0">
-                        Private
+                        {t("profile.private")}
                       </span>
                                         )}
                                     </div>
                                     <div className="flex items-center justify-between text-[12px] mt-3 pt-3 border-t border-token">
                     <span className="text-dim">
-                      {b.components?.length || 0} parts
+                      {t("profile.parts", { count: n(b.components?.length || 0) })}
                     </span>
                                         <span className="font-display font-semibold text-pink">
-                      {Number(b.totalPrice).toLocaleString()} SAR
+                      {n(Number(b.totalPrice))} SAR
                     </span>
                                     </div>
                                 </Link>
@@ -345,15 +338,15 @@ function OverviewTab({ profile }) {
             {/* Achievements preview */}
             <Reveal delay={180}>
                 <div className="border border-token bg-surface p-5">
-                    <h2 className="font-display font-semibold mb-4">Achievements</h2>
+                    <h2 className="font-display font-semibold mb-4">{t("profile.achievements")}</h2>
                     {topAchievements.length === 0 ? (
                         <p className="text-dim text-[12.5px]">
-                            No achievements yet — start building!
+                            {t("profile.noAchievements")}
                         </p>
                     ) : (
                         <ul className="space-y-3">
                             {topAchievements.map((key) => {
-                                const a = getAchievement(key);
+                                const a = getAchievement(key, t);
                                 return (
                                     <li key={key} className="flex items-center gap-3">
                                         <div
@@ -391,11 +384,12 @@ function OverviewTab({ profile }) {
 }
 
 function BuildsTab({ builds, isOwn }) {
+    const { t, n } = useLang();
     if (builds.length === 0) {
         return (
             <div className="border border-dashed border-token p-12 text-center">
                 <p className="text-dim text-sm">
-                    {isOwn ? "You haven't created any builds yet." : "No public builds yet."}
+                    {isOwn ? t("profile.myBuildsEmpty") : t("profile.publicBuildsEmpty")}
                 </p>
             </div>
         );
@@ -414,11 +408,11 @@ function BuildsTab({ builds, isOwn }) {
                         </h3>
                         {b.isPublic ? (
                             <span className="text-[10px] font-mono uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 px-1.5 py-0.5 shrink-0">
-                Public
+                {t("profile.public")}
               </span>
                         ) : (
                             <span className="text-[10px] font-mono uppercase tracking-wider bg-page border border-token text-dim px-1.5 py-0.5 shrink-0">
-                Private
+                {t("profile.private")}
               </span>
                         )}
                     </div>
@@ -429,10 +423,10 @@ function BuildsTab({ builds, isOwn }) {
                     )}
                     <div className="mt-auto pt-3 border-t border-token flex items-center justify-between">
             <span className="text-[11.5px] text-dim font-mono">
-              {b.components?.length || 0} parts
+              {t("profile.parts", { count: n(b.components?.length || 0) })}
             </span>
                         <span className="font-display font-semibold text-[13.5px] text-pink">
-              {Number(b.totalPrice).toLocaleString()} SAR
+              {n(Number(b.totalPrice))} SAR
             </span>
                     </div>
                 </Link>
@@ -442,13 +436,14 @@ function BuildsTab({ builds, isOwn }) {
 }
 
 function AchievementsTab({ achievements }) {
+    const { t } = useLang();
     const all = Object.keys(ACHIEVEMENT_ICONS);
     const unlocked = new Set(achievements);
 
     return (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {all.map((key) => {
-                const a = getAchievement(key);
+                const a = getAchievement(key, t);
                 const has = unlocked.has(key);
                 return (
                     <div
@@ -490,7 +485,7 @@ function AchievementsTab({ achievements }) {
                                     {a.label}
                                 </div>
                                 <div className="text-[11.5px] text-dim">
-                                    {has ? "Unlocked" : "Locked"}
+                                    {has ? t("profile.ach.unlocked") : t("profile.ach.locked")}
                                 </div>
                             </div>
                         </div>

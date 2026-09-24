@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useLang } from "../context/LanguageContext";
 import {
     createBuild,
     updateBuild,
@@ -12,13 +13,13 @@ import { getComponent, listComponents } from "../services/componentService";
 import Reveal from "../components/Reveal";
 
 const CATEGORIES = [
-    { key: "CPU", label: "CPU", required: true },
-    { key: "MOTHERBOARD", label: "Motherboard", required: true },
-    { key: "RAM", label: "Memory", required: true },
-    { key: "GPU", label: "Graphics Card", required: false },
-    { key: "STORAGE", label: "Storage", required: true },
-    { key: "POWER_SUPPLY", label: "Power Supply", required: true },
-    { key: "CASE", label: "Case", required: true },
+    { key: "CPU", label: "builder.catCPU", required: true },
+    { key: "MOTHERBOARD", label: "builder.catMotherboard", required: true },
+    { key: "RAM", label: "builder.catMemory", required: true },
+    { key: "GPU", label: "builder.catGpu", required: false },
+    { key: "STORAGE", label: "builder.catStorage", required: true },
+    { key: "POWER_SUPPLY", label: "builder.catPowerSupply", required: true },
+    { key: "CASE", label: "builder.catCase", required: true },
 ];
 
 const DRAFT_KEY = "draftComponents";
@@ -29,10 +30,11 @@ export default function BuilderPage() {
     const { firebaseUser } = useAuth();
     const navigate = useNavigate();
     const toast = useToast();
+    const { t, n } = useLang();
     const { id: editId } = useParams();
 
     const [draft, setDraft] = useState([]);
-    const [name, setName] = useState("My Build");
+    const [name, setName] = useState(() => t("builder.defaultBuildName"));
     const [description, setDescription] = useState("");
     const [isPublic, setIsPublic] = useState(false);
     const [warnings, setWarnings] = useState([]);
@@ -120,7 +122,7 @@ export default function BuilderPage() {
             const res = await listComponents({ category: categoryKey, size: 60 });
             setPickerItems(res.content || []);
         } catch (e) {
-            toast.error("Failed to load components");
+            toast.error(t("builder.loadComponentsError"));
             setPickerItems([]);
         } finally {
             setPickerLoading(false);
@@ -133,7 +135,7 @@ export default function BuilderPage() {
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next));
         setDraft(next);
         setPickerOpen(null);
-        toast.success(`${c.name} added`);
+        toast.success(t("builder.addedToast", { name: c.name }));
     };
 
     const removeItem = (category) => {
@@ -159,7 +161,7 @@ export default function BuilderPage() {
     const onSave = async () => {
         setError("");
         if (draft.length === 0) {
-            setError("Add at least one component before saving.");
+            setError(t("builder.saveMinError"));
             return;
         }
         setSaving(true);
@@ -174,7 +176,7 @@ export default function BuilderPage() {
             sessionStorage.removeItem(EDIT_KEY);
             sessionStorage.removeItem(DRAFT_KEY);
             sessionStorage.removeItem(META_KEY);
-            toast.success(editId ? "Build updated!" : "Build saved!");
+            toast.success(editId ? t("builder.updatedToast") : t("builder.savedToast"));
             navigate(`/builds/${saved.id}`);
         } catch (err) {
             setError(err.message);
@@ -189,9 +191,9 @@ export default function BuilderPage() {
     if (!firebaseUser) {
         return (
             <div className="text-center py-20">
-                <p className="text-dim mb-4">Please sign in to use the builder.</p>
+                <p className="text-dim mb-4">{t("builder.signInPrompt")}</p>
                 <button onClick={() => navigate("/login")} className="btn-primary">
-                    Sign in
+                    {t("builder.signIn")}
                 </button>
             </div>
         );
@@ -217,12 +219,12 @@ export default function BuilderPage() {
             <Reveal>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <div className="eyebrow mb-2">{editId ? "Editing" : "New build"}</div>
+                        <div className="eyebrow mb-2">{editId ? t("builder.eyebrowEditing") : t("builder.eyebrowNew")}</div>
                         <h1 className="font-display text-3xl md:text-4xl font-bold">
-                            {editId ? "Edit Build" : "PC Builder"}
+                            {editId ? t("builder.editBuild") : t("builder.pcBuilder")}
                         </h1>
                         <p className="text-[13.5px] text-dim mt-1.5">
-                            Pick a part for each category. All options open right here — no page jumps.
+                            {t("builder.introText")}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -230,14 +232,14 @@ export default function BuilderPage() {
                             onClick={() => navigate("/components")}
                             className="btn-secondary !py-2 !px-4 !text-[13px]"
                         >
-                            Browse all parts
+                            {t("builder.browseAllParts")}
                         </button>
                         {draft.length > 0 && (
                             <button
                                 onClick={clearAll}
                                 className="text-[13px] text-red-500 hover:opacity-75 transition"
                             >
-                                Clear all
+                                {t("builder.clearAll")}
                             </button>
                         )}
                     </div>
@@ -257,19 +259,19 @@ export default function BuilderPage() {
                                 >
                                     <div className="min-w-0 flex-1">
                                         <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-dim">
-                                            {c.label}
-                                            {c.required && <span className="text-pink ml-1">*</span>}
+                                            {t(c.label)}
+                                            {c.required && <span className="text-pink ms-1">*</span>}
                                         </div>
                                         <div className="font-display font-semibold text-[14.5px] mt-1 truncate">
                                             {selected ? selected.name : (
-                                                <span className="text-dim font-normal">Not selected</span>
+                                                <span className="text-dim font-normal">{t("builder.notSelected")}</span>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 pl-3 shrink-0">
+                                    <div className="flex items-center gap-3 ps-3 shrink-0">
                                         {selected && (
                                             <span className="text-[13px] font-semibold font-mono text-pink">
-                        {Number(selected.price).toLocaleString()} SAR
+                        {n(selected.price)} SAR
                       </span>
                                         )}
                                         {selected ? (
@@ -278,7 +280,7 @@ export default function BuilderPage() {
                                                 onClick={() => removeItem(c.key)}
                                                 className="text-[11.5px] border border-token px-2.5 py-1.5 text-dim hover:text-red-500 hover:border-red-500/40 transition"
                                             >
-                                                Remove
+                                                {t("builder.remove")}
                                             </button>
                                         ) : null}
                                         <button
@@ -286,7 +288,7 @@ export default function BuilderPage() {
                                             onClick={() => openPicker(c.key)}
                                             className="text-[11.5px] font-semibold px-3 py-1.5 transition gradient-brand text-white shadow hover:shadow-lg"
                                         >
-                                            {selected ? "Change" : "Pick"}
+                                            {selected ? t("builder.change") : t("builder.pick")}
                                         </button>
                                     </div>
                                 </div>
@@ -299,10 +301,10 @@ export default function BuilderPage() {
                     <div className="sticky top-20 space-y-4">
                         <Reveal delay={100}>
                             <div className="border border-token bg-surface p-5 space-y-4">
-                                <h2 className="font-display font-bold text-[15px]">Summary</h2>
+                                <h2 className="font-display font-bold text-[15px]">{t("builder.summary")}</h2>
                                 <div>
                                     <label className="text-[11px] uppercase tracking-[0.14em] text-dim">
-                                        Build name
+                                        {t("builder.buildName")}
                                     </label>
                                     <input
                                         value={name}
@@ -312,7 +314,7 @@ export default function BuilderPage() {
                                 </div>
                                 <div>
                                     <label className="text-[11px] uppercase tracking-[0.14em] text-dim">
-                                        Description
+                                        {t("builder.description")}
                                     </label>
                                     <textarea
                                         value={description}
@@ -329,7 +331,7 @@ export default function BuilderPage() {
                                         className="w-4 h-4"
                                         style={{ accentColor: "var(--purple)" }}
                                     />
-                                    Publish to community
+                                    {t("builder.publishToCommunity")}
                                 </label>
                             </div>
                         </Reveal>
@@ -337,16 +339,16 @@ export default function BuilderPage() {
                         <Reveal delay={180}>
                             <div className="border border-token bg-surface p-5">
                                 <div className="flex justify-between text-[13px] text-dim">
-                                    <span>Components</span>
+                                    <span>{t("builder.components")}</span>
                                     <span className="font-mono">{draft.length}</span>
                                 </div>
                                 <div className="flex items-end justify-between mt-3 pt-4 border-t border-token">
-                                    <span className="text-[12.5px] text-dim">Total</span>
-                                    <div className="text-right">
+                                    <span className="text-[12.5px] text-dim">{t("builder.total")}</span>
+                                    <div className="text-end">
                     <span className="font-display text-2xl font-bold text-pink">
-                      {total.toLocaleString()}
+                      {n(total)}
                     </span>
-                                        <span className="text-[12px] text-dim ml-1.5">SAR</span>
+                                        <span className="text-[12px] text-dim ms-1.5">SAR</span>
                                     </div>
                                 </div>
                             </div>
@@ -356,7 +358,7 @@ export default function BuilderPage() {
                             <Reveal delay={220}>
                                 <div className="border border-amber-500/30 bg-amber-500/[0.06] p-4 text-[12.5px]">
                                     <div className="font-semibold text-amber-600 dark:text-amber-400 mb-2">
-                                        Compatibility warnings
+                                        {t("builder.compatWarnings")}
                                     </div>
                                     <ul className="space-y-1 text-amber-700 dark:text-amber-300/90 list-disc list-inside">
                                         {warnings.map((w, i) => (
@@ -379,7 +381,7 @@ export default function BuilderPage() {
                             disabled={saving || draft.length === 0}
                             className="btn-primary w-full justify-center disabled:opacity-40"
                         >
-                            {saving ? "Saving…" : editId ? "Update build" : "Save build"}
+                            {saving ? t("builder.saving") : editId ? t("builder.updateBuild") : t("builder.saveBuild")}
                         </button>
                     </div>
                 </div>
@@ -392,9 +394,9 @@ export default function BuilderPage() {
                     <div className="slide-in-right w-full max-w-md bg-surface border-l border-token flex flex-col shadow-2xl">
                         <div className="p-5 border-b border-token flex items-center justify-between">
                             <div>
-                                <div className="eyebrow">Select</div>
+                                <div className="eyebrow">{t("builder.select")}</div>
                                 <h3 className="font-display font-bold text-[17px] mt-0.5">
-                                    {CATEGORIES.find((c) => c.key === pickerOpen)?.label}
+                                    {t(CATEGORIES.find((c) => c.key === pickerOpen)?.label)}
                                 </h3>
                             </div>
                             <button
@@ -424,8 +426,8 @@ export default function BuilderPage() {
                                     autoFocus
                                     value={pickerSearch}
                                     onChange={(e) => setPickerSearch(e.target.value)}
-                                    placeholder="Search…"
-                                    className="w-full pl-9 pr-3 py-2 text-[13px] bg-page border border-token text-body placeholder:text-dim focus:outline-none focus:border-[color:var(--purple)] focus:ring-2 focus:ring-[color:var(--purple)]/15"
+                                    placeholder={t("builder.search")}
+                                    className="w-full ps-9 pe-3 py-2 text-[13px] bg-page border border-token text-body placeholder:text-dim focus:outline-none focus:border-[color:var(--purple)] focus:ring-2 focus:ring-[color:var(--purple)]/15"
                                 />
                             </div>
                         </div>
@@ -441,7 +443,7 @@ export default function BuilderPage() {
 
                             {!pickerLoading && filteredPickerItems.length === 0 && (
                                 <div className="text-center py-12 text-dim text-[13px]">
-                                    No components found.
+                                    {t("builder.noComponentsFound")}
                                 </div>
                             )}
 
@@ -454,7 +456,7 @@ export default function BuilderPage() {
                                             key={c.id}
                                             type="button"
                                             onClick={() => pickComponent(c)}
-                                            className={`w-full text-left border p-3.5 transition-all hover:border-[color:var(--purple)]/60 ${
+                                            className={`w-full text-start border p-3.5 transition-all hover:border-[color:var(--purple)]/60 ${
                                                 isSelected
                                                     ? "border-[color:var(--purple)] bg-[color:var(--purple)]/5"
                                                     : "border-token"
@@ -482,14 +484,14 @@ export default function BuilderPage() {
                                                             ))}
                                                     </div>
                                                 </div>
-                                                <div className="text-right shrink-0">
+                                                <div className="text-end shrink-0">
                                                     <div className="font-display font-bold text-[14px] text-pink">
-                                                        {Number(c.price).toLocaleString()}
+                                                        {n(c.price)}
                                                     </div>
                                                     <div className="text-[10px] text-dim">SAR</div>
                                                     {isSelected && (
                                                         <div className="mt-1 text-[10px] font-bold text-[color:var(--purple)] uppercase">
-                                                            Selected
+                                                            {t("builder.selected")}
                                                         </div>
                                                     )}
                                                 </div>
@@ -500,7 +502,7 @@ export default function BuilderPage() {
                         </div>
 
                         <div className="p-4 border-t border-token text-[11.5px] text-dim text-center">
-                            Click a component to add it. You can change your pick anytime.
+                            {t("builder.pickerHint")}
                         </div>
                     </div>
                 </div>

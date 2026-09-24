@@ -46,7 +46,7 @@ Reusable UI:
 
 - Navbar, Layout - shell
 - ProtectedRoute, AdminRoute - route guards
-- SearchBar, ThemeToggle, BackButton - small UI primitives
+- SearchBar, ThemeToggle, LanguageToggle, BackButton - small UI primitives
 - Reveal, Counter - animations
 - EditProfileModal - profile edit dialog
 - chat/ChatWidget - floating AI assistant
@@ -58,6 +58,8 @@ Global state providers wrapped in main.jsx:
 - AuthContext - Firebase user + register/login/logout functions
 - ThemeContext - dark/light mode with localStorage persistence
 - ToastContext - global toast notification system
+- LanguageContext - en/ar language + RTL direction; flips <html lang>/<html dir>
+  and persists to localStorage ("lang"), exposes reactive t()/n()/d()
 
 ### Services (src/services/)
 Thin wrappers around api.js (axios). One file per domain:
@@ -70,7 +72,25 @@ Thin wrappers around api.js (axios). One file per domain:
 - firebase.js - initializes Firebase app + exports auth
 - api.js - Axios instance with a request interceptor that attaches the
   Firebase ID token to every outgoing request
-- achievements.jsx - achievement definitions + icons
+- achievements.jsx - achievement definitions + icons (keys resolved at
+  render time via t())
+- i18n.js - en/ar dictionaries merged from the locale namespaces + translate(),
+  formatNumber() (western digits), formatDate()
+
+### Locales (src/locales/)
+One namespace file per feature, each exporting `export default { en, ar }`.
+All keys are flat and prefixed with the namespace (nav, landing, auth,
+catalog, builder, community, profile, admin, chat, misc). Mixed-language
+safety: every key falls back to en, then to the raw key.
+
+### i18n / RTL
+- The LanguageToggle button (navbar, next to ThemeToggle) flips en/ar.
+- LanguageContext sets `<html lang>` and `<html dir>` (rtl for ar) and
+  persists to localStorage.
+- Arabic uses the Tajawal Google Font via `html[lang="ar"]` rules.
+- Layout mirroring uses logical Tailwind utilities (`ms-*`/`me-*`/`ps-*`/
+  `pe-*`/`start-*`/`end-*`/`text-start`/`text-end`) instead of physical
+  `ml/mr/pl/pr/left/right` where the UI must mirror.
 
 ### Hooks (src/hooks/)
 - useMe.js - module-scoped cached fetch of /api/me, shared across components
@@ -99,3 +119,4 @@ All decisions live in docs/adr/:
 | 0004 | Axios with a token interceptor |
 | 0005 | Theme in Context + localStorage |
 | 0006 | _redirects for SPA on Render |
+| 0007 | i18n in a React Context with RTL support |

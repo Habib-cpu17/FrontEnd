@@ -5,23 +5,25 @@ import { listPublicBuilds } from "../services/buildService";
 import { listCurated } from "../services/adminService";
 import Reveal from "../components/Reveal";
 import ThemeToggle from "../components/ThemeToggle";
+import LanguageToggle from "../components/LanguageToggle";
 import SearchBar from "../components/SearchBar";
+import { useLang } from "../context/LanguageContext";
 
-const CATEGORY_TILES = [
-    { key: "GPU",          label: "Graphics Cards", count: 8, img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&q=80" },
-    { key: "CPU",          label: "Processors",     count: 8, img: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=700&q=80" },
-    { key: "MOTHERBOARD",  label: "Motherboards",   count: 6, img: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&q=80" },
-    { key: "RAM",          label: "Memory",         count: 5, img: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=700&q=80" },
-    { key: "STORAGE",      label: "Storage",        count: 5, img: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=700&q=80" },
-    { key: "POWER_SUPPLY", label: "Power Supplies", count: 5, img: "https://images.unsplash.com/photo-1591405351990-4726e331f141?w=700&q=80" },
-    { key: "CASE",         label: "Cases",          count: 6, img: "https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=700&q=80" },
+const CATEGORY_TILES = (t) => [
+    { key: "GPU",          label: t("landing.catGpu"),          count: 8, img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&q=80" },
+    { key: "CPU",          label: t("landing.catCpu"),          count: 8, img: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=700&q=80" },
+    { key: "MOTHERBOARD",  label: t("landing.catMotherboard"),  count: 6, img: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&q=80" },
+    { key: "RAM",          label: t("landing.catRam"),          count: 5, img: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=700&q=80" },
+    { key: "STORAGE",      label: t("landing.catStorage"),      count: 5, img: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=700&q=80" },
+    { key: "POWER_SUPPLY", label: t("landing.catPsu"),          count: 5, img: "https://images.unsplash.com/photo-1591405351990-4726e331f141?w=700&q=80" },
+    { key: "CASE",         label: t("landing.catCase"),         count: 6, img: "https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=700&q=80" },
 ];
 
-const TRUST = [
-    { icon: "tag",    t: "Live SAR Prices",    d: "Updated from real retailer feeds" },
-    { icon: "shield", t: "Auto Compatibility", d: "Socket, RAM, and PSU checks" },
-    { icon: "users",  t: "Community Builds",   d: "Browse real rigs from builders" },
-    { icon: "share",  t: "Save & Publish",     d: "One-click sharing with the community" },
+const TRUST = (t) => [
+    { icon: "tag",    title: t("landing.trustLiveTitle"),      desc: t("landing.trustLiveDesc") },
+    { icon: "shield", title: t("landing.trustCompatTitle"),    desc: t("landing.trustCompatDesc") },
+    { icon: "users",  title: t("landing.trustCommunityTitle"), desc: t("landing.trustCommunityDesc") },
+    { icon: "share",  title: t("landing.trustShareTitle"),     desc: t("landing.trustShareDesc") },
 ];
 
 const ICONS = {
@@ -65,8 +67,16 @@ const XMark = ({ className = "", strokeWidth = 6 }) => (
 // Speed in pixels per second. Lower = slower drift.
 const SCROLL_SPEED = 40;
 
+const DEMO_BUILD_NAMES = (t) => [
+    t("landing.demoBuild1"),
+    t("landing.demoBuild2"),
+    t("landing.demoBuild3"),
+    t("landing.demoBuild4"),
+];
+
 export default function LandingPage() {
     const { firebaseUser } = useAuth();
+    const { t, n, lang } = useLang();
     const [builds, setBuilds] = useState([]);
     const [curated, setCurated] = useState([]);
 
@@ -83,6 +93,7 @@ export default function LandingPage() {
 
     // Continuous rAF loop
     useEffect(() => {
+        const tileCount = CATEGORY_TILES(t).length;
         const tick = (now) => {
             const el = carouselRef.current;
             if (el && !pausedRef.current) {
@@ -98,7 +109,7 @@ export default function LandingPage() {
                 const firstCard = el.querySelector("[data-carousel-card]");
                 if (firstCard) {
                     const step = firstCard.offsetWidth + 16; // width + gap
-                    const setWidth = step * CATEGORY_TILES.length;
+                    const setWidth = step * tileCount;
                     if (el.scrollLeft >= setWidth) {
                         el.scrollLeft -= setWidth;
                     }
@@ -110,7 +121,7 @@ export default function LandingPage() {
         };
         rafRef.current = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(rafRef.current);
-    }, []);
+    }, [t]);
 
     const setPaused = (v) => {
         pausedRef.current = v;
@@ -141,7 +152,7 @@ export default function LandingPage() {
     const displayBuilds = curated.length > 0 ? curated.slice(0, 4) : builds;
 
     // Render each tile twice — second set makes the loop seamless.
-    const carouselTiles = [...CATEGORY_TILES, ...CATEGORY_TILES];
+    const carouselTiles = [...CATEGORY_TILES(t), ...CATEGORY_TILES(t)];
 
     return (
         <div className="min-h-screen bg-page text-body">
@@ -166,11 +177,12 @@ export default function LandingPage() {
 
                     <SearchBar className="hidden lg:flex" />
 
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="ms-auto flex items-center gap-2">
+                        <LanguageToggle />
                         <ThemeToggle />
                         {firebaseUser ? (
                             <Link to="/dashboard" className="btn-primary !py-2 !px-4 !text-[13px]">
-                                Dashboard
+                                {t("landing.dashboard")}
                             </Link>
                         ) : (
                             <>
@@ -178,10 +190,10 @@ export default function LandingPage() {
                                     to="/login"
                                     className="hidden sm:inline text-[13px] text-dim hover:text-body transition px-3"
                                 >
-                                    Sign in
+                                    {t("landing.signIn")}
                                 </Link>
                                 <Link to="/register" className="btn-yellow !py-2 !px-4 !text-[13px]">
-                                    GET STARTED
+                                    {t("landing.getStarted")}
                                 </Link>
                             </>
                         )}
@@ -190,11 +202,11 @@ export default function LandingPage() {
 
                 <div className="hidden md:block border-t border-token">
                     <div className="max-w-7xl mx-auto px-6 h-11 flex items-center gap-6 text-[12.5px] font-medium">
-                        <Link to="/components" className="text-dim hover:text-pink transition uppercase">Components</Link>
-                        <Link to="/builder" className="text-dim hover:text-pink transition uppercase">Builder</Link>
-                        <Link to="/public-builds" className="text-dim hover:text-pink transition uppercase">Community</Link>
-                        <Link to="/my-builds" className="text-dim hover:text-pink transition uppercase">My Builds</Link>
-                        <span className="ml-auto text-dim">Build. Compare. Share.</span>
+                        <Link to="/components" className="text-dim hover:text-pink transition uppercase">{t("landing.components")}</Link>
+                        <Link to="/builder" className="text-dim hover:text-pink transition uppercase">{t("landing.builder")}</Link>
+                        <Link to="/public-builds" className="text-dim hover:text-pink transition uppercase">{t("landing.community")}</Link>
+                        <Link to="/my-builds" className="text-dim hover:text-pink transition uppercase">{t("landing.myBuilds")}</Link>
+                        <span className="ms-auto text-dim">{t("landing.tagline")}</span>
                     </div>
                 </div>
             </header>
@@ -236,27 +248,27 @@ export default function LandingPage() {
                                     <div className="space-y-5 z-10">
                                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/25 backdrop-blur text-white text-[11.5px] font-semibold uppercase tracking-widest">
                                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                                            Smart Builder
+                                            {t("landing.smartBuilder")}
                                         </div>
-                                        <h1 className="hero-in font-display text-[46px] md:text-[62px] leading-[0.95] font-bold text-white">
-                                            Build The Rig
+                                        <h1 className={`hero-in font-display text-[46px] md:text-[62px] font-bold text-white ${lang === "ar" ? "leading-[1.4]" : "leading-[0.95]"}`}>
+                                            {t("landing.heroTitle1")}
                                             <br />
                                             <span className="text-yellow-400" style={{ WebkitTextStroke: "2px #1a0b2e" }}>
-                        You Actually Want
+                        {t("landing.heroTitle2")}
                       </span>
                                         </h1>
                                         <p
                                             className="hero-in text-[15px] text-white/85 max-w-sm leading-relaxed"
                                             style={{ animationDelay: "160ms" }}
                                         >
-                                            Plan with live SAR pricing. Catch compatibility issues before you buy. Share it with the community.
+                                            {t("landing.heroSub")}
                                         </p>
                                         <div
                                             className="hero-in flex flex-wrap gap-3 pt-2"
                                             style={{ animationDelay: "260ms" }}
                                         >
                                             <Link to={primaryHref} className="btn-yellow">
-                                                START BUILDING
+                                                {t("landing.startBuilding")}
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                                     <path d="M5 12h14M13 5l7 7-7 7" />
                                                 </svg>
@@ -265,7 +277,7 @@ export default function LandingPage() {
                                                 to="/public-builds"
                                                 className="inline-flex items-center gap-2 px-5 py-3 border-2 border-white/40 text-white text-[14px] font-medium hover:bg-white/10 transition"
                                             >
-                                                Explore Community
+                                                {t("landing.exploreCommunity")}
                                             </Link>
                                         </div>
                                     </div>
@@ -273,7 +285,7 @@ export default function LandingPage() {
                                     <div className="relative h-[280px] md:h-[360px] animate-floaty">
                                         <img
                                             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&q=80"
-                                            alt="Gaming PC"
+                                            alt={t("landing.heroAlt")}
                                             className="w-full h-full object-cover shadow-2xl border-2 border-white/20"
                                         />
                                     </div>
@@ -300,20 +312,20 @@ export default function LandingPage() {
 
                                     <div className="relative z-10">
                                         <div className="text-[11px] uppercase tracking-widest text-white/80 font-bold mb-1">
-                                            Featured
+                                            {t("landing.featuredEyebrow")}
                                         </div>
                                         <div className="font-display text-2xl font-bold text-white leading-tight">
-                                            Build With
+                                            {t("landing.buildWith")}
                                             <br />
-                                            Confidence
+                                            {t("landing.confidence")}
                                         </div>
                                         <p className="text-[12.5px] text-white/80 mt-2 max-w-[180px]">
-                                            Every part checked. Every price in SAR.
+                                            {t("landing.confidenceSub")}
                                         </p>
                                     </div>
 
                                     <Link to="/builder" className="relative z-10 self-start btn-yellow !py-2 !px-4 !text-[12px]">
-                                        START →
+                                        {t("landing.featuredCta")}
                                     </Link>
 
                                     <img
@@ -340,12 +352,12 @@ export default function LandingPage() {
 
                                     <div className="relative z-10">
                                         <div className="text-[11px] uppercase tracking-widest text-[#1a0b2e]/70 font-bold">
-                                            Catalog
+                                            {t("landing.catalogEyebrow")}
                                         </div>
                                         <div className="font-display text-xl font-bold text-[#1a0b2e] leading-tight">
-                                            Browse
+                                            {t("landing.browse")}
                                             <br />
-                                            Components
+                                            {t("landing.components")}
                                         </div>
                                     </div>
 
@@ -354,7 +366,7 @@ export default function LandingPage() {
                                         className="relative z-10 btn-primary !py-2 !px-3.5 !text-[12px] !bg-none"
                                         style={{ background: "#1a0b2e", color: "#fff" }}
                                     >
-                                        EXPLORE →
+                                        {t("landing.explore")}
                                     </Link>
                                 </div>
                             </Reveal>
@@ -364,16 +376,16 @@ export default function LandingPage() {
                     {/* VALUE PROPS */}
                     <Reveal delay={300}>
                         <div className="mt-6 border border-token bg-surface p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {TRUST.map((t) => (
-                                <div key={t.t} className="flex items-center gap-3">
+                            {TRUST(t).map((item) => (
+                                <div key={item.icon} className="flex items-center gap-3">
                                     <div className="w-11 h-11 grid place-items-center gradient-brand-soft border border-token shrink-0">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                            {ICONS[t.icon]}
+                                            {ICONS[item.icon]}
                                         </svg>
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="font-display font-semibold text-[13.5px] leading-tight">{t.t}</div>
-                                        <div className="text-[11.5px] text-dim leading-tight mt-0.5">{t.d}</div>
+                                        <div className="font-display font-semibold text-[13.5px] leading-tight">{item.title}</div>
+                                        <div className="text-[11.5px] text-dim leading-tight mt-0.5">{item.desc}</div>
                                     </div>
                                 </div>
                             ))}
@@ -388,16 +400,16 @@ export default function LandingPage() {
                     <Reveal>
                         <div className="flex items-end justify-between mb-8 gap-4">
                             <div>
-                                <div className="eyebrow mb-2">Browse</div>
+                                <div className="eyebrow mb-2">{t("landing.browse")}</div>
                                 <h2 className="font-display text-3xl md:text-4xl font-bold">
-                                    Featured Categories
+                                    {t("landing.featuredCategories")}
                                 </h2>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
                                     type="button"
                                     onClick={() => nudge(-1)}
-                                    aria-label="Previous"
+                                    aria-label={t("misc.prev")}
                                     className="w-10 h-10 border border-token grid place-items-center text-dim hover:text-pink hover:border-[color:var(--pink)] transition"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -407,7 +419,7 @@ export default function LandingPage() {
                                 <button
                                     type="button"
                                     onClick={() => nudge(1)}
-                                    aria-label="Next"
+                                    aria-label={t("misc.next")}
                                     className="w-10 h-10 border border-token grid place-items-center text-dim hover:text-pink hover:border-[color:var(--pink)] transition"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -450,7 +462,7 @@ export default function LandingPage() {
                                                 />
                                             </div>
                                             <span className="absolute top-3 left-3 text-[10.5px] font-bold px-2 py-0.5 gradient-brand text-white">
-                        {c.count} Products
+                        {t("landing.productsBadge", { count: n(c.count) })}
                       </span>
                                         </div>
                                         <div className="mt-3">
@@ -472,16 +484,16 @@ export default function LandingPage() {
                     <Reveal>
                         <div className="flex items-end justify-between mb-8">
                             <div>
-                                <div className="eyebrow mb-2">Community</div>
+                                <div className="eyebrow mb-2">{t("landing.community")}</div>
                                 <h2 className="font-display text-3xl md:text-4xl font-bold">
-                                    Top Community Builds
+                                    {t("landing.topBuilds")}
                                 </h2>
                             </div>
                             <Link
                                 to="/public-builds"
                                 className="text-[13px] font-semibold text-pink hover:underline underline-offset-4"
                             >
-                                View All →
+                                {t("landing.viewAll")}
                             </Link>
                         </div>
                     </Reveal>
@@ -491,7 +503,7 @@ export default function LandingPage() {
                                 ? displayBuilds
                                 : Array.from({ length: 4 }, (_, i) => ({
                                     id: `demo-${i}`,
-                                    name: ["Gaming Rig", "Creator PC", "Budget Build", "Enthusiast"][i],
+                                    name: DEMO_BUILD_NAMES(t)[i],
                                     totalPrice: [4800, 6500, 2200, 12000][i],
                                     components: Array(6 - i).fill(0),
                                 }))
@@ -520,7 +532,7 @@ export default function LandingPage() {
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />
                                             <span className="absolute top-3 right-3 text-[10.5px] font-bold px-2 py-0.5 bg-yellow-400 text-[#1a0b2e]">
-                        ★ Popular
+                        {t("landing.popular")}
                       </span>
                                         </div>
                                         <div className="p-4">
@@ -529,15 +541,15 @@ export default function LandingPage() {
                                             </h3>
                                             <div className="flex items-center justify-between mt-3">
                         <span className="font-display font-bold text-[16px] text-pink">
-                          {Number(b.totalPrice).toLocaleString()}{" "}
+                          {n(b.totalPrice)}{" "}
                             <span className="text-[11px] font-normal text-dim">SAR</span>
                         </span>
                                                 <span className="text-[11px] text-dim">
-                          {b.components?.length || 0} parts
+                          {t("landing.parts", { count: n(b.components?.length || 0) })}
                         </span>
                                             </div>
                                             <div className="mt-3 w-full text-center py-2 border border-token text-[12px] font-semibold text-dim group-hover:bg-[color:var(--purple)] group-hover:text-white group-hover:border-transparent transition">
-                                                VIEW BUILD →
+                                                {t("landing.viewBuild")}
                                             </div>
                                         </div>
                                     </Link>
@@ -561,29 +573,29 @@ export default function LandingPage() {
                             <div className="relative min-h-[320px] md:min-h-[380px] p-8 md:p-0">
                                 <img
                                     src="https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=900&q=80"
-                                    alt="Build your PC"
+                                    alt={t("landing.ctaAlt")}
                                     className="absolute inset-0 w-full h-full object-cover opacity-90"
                                 />
                             </div>
                             <div className="p-10 md:p-14 flex flex-col justify-center text-white relative z-10">
                                 <div className="text-[11px] uppercase tracking-widest font-bold text-yellow-300 mb-3">
-                                    Custom Builds
+                                    {t("landing.customBuilds")}
                                 </div>
                                 <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight mb-4">
-                                    Build A Custom PC
+                                    {t("landing.buildCustomPc")}
                                 </h2>
                                 <p className="text-[14.5px] text-white/85 mb-8 max-w-sm">
-                                    Designed by you. Priced in SAR. Verified by our compatibility engine.
+                                    {t("landing.customSub")}
                                 </p>
                                 <div className="flex flex-wrap gap-3">
                                     <Link to={primaryHref} className="btn-yellow">
-                                        START BUILDING
+                                        {t("landing.startBuilding")}
                                     </Link>
                                     <Link
                                         to="/components"
                                         className="inline-flex items-center gap-2 px-5 py-3 border-2 border-white/40 text-white text-[14px] font-medium hover:bg-white/10 transition"
                                     >
-                                        Browse Parts
+                                        {t("landing.browseParts")}
                                     </Link>
                                 </div>
                             </div>
@@ -604,8 +616,8 @@ export default function LandingPage() {
                         <span className="font-display font-bold">Setup Builder</span>
                     </div>
                     <div className="flex items-center gap-6">
-                        <Link to="/components" className="hover:text-pink transition">Components</Link>
-                        <Link to="/public-builds" className="hover:text-pink transition">Community</Link>
+                        <Link to="/components" className="hover:text-pink transition">{t("landing.components")}</Link>
+                        <Link to="/public-builds" className="hover:text-pink transition">{t("landing.community")}</Link>
                         <span>© {new Date().getFullYear()}</span>
                     </div>
                 </div>

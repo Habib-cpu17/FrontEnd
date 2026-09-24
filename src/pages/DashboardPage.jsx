@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLang } from "../context/LanguageContext";
 import api from "../lib/api";
 import { listMyBuilds } from "../services/buildService";
 import Reveal from "../components/Reveal";
 import Counter from "../components/Counter";
 
 export default function DashboardPage() {
+    const { t } = useLang();
     const { firebaseUser } = useAuth();
     const [me, setMe] = useState(null);
     const [buildsCount, setBuildsCount] = useState(null);
@@ -46,21 +48,21 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="min-w-0">
-                            <div className="eyebrow mb-1">Signed in</div>
+                            <div className="eyebrow mb-1">{t("community.signedIn")}</div>
                             <h1 className="font-display text-2xl md:text-3xl font-bold truncate">
-                                {me?.displayName || firebaseUser?.email?.split("@")[0] || "Welcome"}
+                                {me?.displayName || firebaseUser?.email?.split("@")[0] || t("community.welcome")}
                             </h1>
                             <p className="text-[13px] text-dim mt-1 truncate">
                                 {me?.email || firebaseUser?.email}
                             </p>
                         </div>
 
-                        <div className="ml-auto flex flex-wrap gap-3">
+                        <div className="ms-auto flex flex-wrap gap-3">
                             <Link to="/builder" className="btn-primary">
-                                New build <span>→</span>
+                                {t("community.newBuild")} <span>→</span>
                             </Link>
                             <Link to="/my-builds" className="btn-secondary">
-                                My builds
+                                {t("community.myBuilds")}
                             </Link>
                         </div>
                     </div>
@@ -70,9 +72,9 @@ export default function DashboardPage() {
             {/* Stats */}
             <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                    { label: "Total builds", value: buildsCount, hint: "Saved to your account" },
-                    { label: "Published", value: publicCount, hint: "Visible to community" },
-                    { label: "Role", value: me?.role || "—", hint: "Account level", isText: true },
+                    { label: t("community.statTotalBuilds"), value: buildsCount, hint: t("community.statTotalHint") },
+                    { label: t("community.statPublished"), value: publicCount, hint: t("community.statPublishedHint") },
+                    { label: t("community.statRole"), value: me?.role || "—", hint: t("community.statRoleHint"), isText: true },
                 ].map((s, i) => (
                     <Reveal key={s.label} delay={i * 90}>
                         <div className="rounded-xl border border-token bg-surface p-5">
@@ -95,13 +97,13 @@ export default function DashboardPage() {
             {/* Quick actions */}
             <Reveal delay={120}>
                 <div>
-                    <h2 className="font-display text-lg font-semibold mb-4">Quick actions</h2>
+                    <h2 className="font-display text-lg font-semibold mb-4">{t("community.quickActions")}</h2>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {[
-                            { to: "/components",    t: "Browse components", d: "43 parts across 7 categories" },
-                            { to: "/builder",       t: "Open builder",       d: "Start a new configuration" },
-                            { to: "/my-builds",     t: "My builds",           d: "Review your saved rigs" },
-                            { to: "/public-builds", t: "Community",           d: "See what others are building" },
+                            { to: "/components",    t: t("community.actBrowseComponents"), d: t("community.actBrowseDesc") },
+                            { to: "/builder",       t: t("community.actOpenBuilder"),     d: t("community.actOpenBuilderDesc") },
+                            { to: "/my-builds",     t: t("community.myBuilds"),           d: t("community.actMyBuildsDesc") },
+                            { to: "/public-builds", t: t("community.community"),          d: t("community.actCommunityDesc") },
                         ].map((a) => (
                             <Link key={a.to} to={a.to} className="card block p-4">
                                 <div className="font-display font-semibold text-[14px] mb-1">

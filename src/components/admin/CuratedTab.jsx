@@ -8,8 +8,10 @@ import {
     listCurated,
 } from "../../services/adminService";
 import Reveal from "../Reveal";
+import { useLang } from "../../context/LanguageContext";
 
 export default function CuratedTab() {
+    const { t } = useLang();
     const [allBuilds, setAllBuilds] = useState(null);
     const [curated, setCurated] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -63,14 +65,12 @@ export default function CuratedTab() {
         <div className="space-y-6">
             <Reveal>
                 <div>
-                    <h2 className="font-display text-lg font-semibold mb-1">Curated Builds</h2>
-                    <p className="text-[13px] text-dim">
-                        Curated builds appear on the landing page, ordered by rank.
-                    </p>
+                    <h2 className="font-display text-lg font-semibold mb-1">{t("admin.curatedTitle")}</h2>
+                    <p className="text-[13px] text-dim">{t("admin.curatedSubtitle")}</p>
                 </div>
             </Reveal>
 
-            {loading && <p className="text-dim text-[13px]">Loading…</p>}
+            {loading && <p className="text-dim text-[13px]">{t("misc.loading")}</p>}
             {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-3 text-[13px] text-red-500">
                     {error}
@@ -79,7 +79,7 @@ export default function CuratedTab() {
 
             {!loading && curated.length > 0 && (
                 <div className="border border-token bg-surface p-5">
-                    <h3 className="eyebrow mb-3">Currently curated · {curated.length}</h3>
+                    <h3 className="eyebrow mb-3">{t("admin.curatedCount", { count: curated.length })}</h3>
                     <div className="space-y-2">
                         {curated.map((b) => (
                             <div
@@ -95,8 +95,8 @@ export default function CuratedTab() {
                                 >
                                     {b.name}
                                 </Link>
-                                <div className="ml-auto flex items-center gap-2 shrink-0">
-                                    <label className="text-[11px] text-dim">rank</label>
+                                <div className="ms-auto flex items-center gap-2 shrink-0">
+                                    <label className="text-[11px] text-dim">{t("admin.rankLabel")}</label>
                                     <input
                                         type="number"
                                         defaultValue={b.curatedRank ?? 0}
@@ -109,7 +109,7 @@ export default function CuratedTab() {
                                         disabled={busyId === b.id}
                                         className="text-[11.5px] border border-token text-dim hover:text-red-500 hover:border-red-500/40 px-2 py-1 transition disabled:opacity-50"
                                     >
-                                        Remove
+                                        {t("admin.remove")}
                                     </button>
                                 </div>
                             </div>
@@ -120,7 +120,7 @@ export default function CuratedTab() {
 
             {!loading && allBuilds && (
                 <div className="border border-token bg-surface p-5">
-                    <h3 className="eyebrow mb-3">All public builds</h3>
+                    <h3 className="eyebrow mb-3">{t("admin.allPublicBuilds")}</h3>
                     <div className="space-y-2">
                         {allBuilds.content
                             .filter((b) => b.isPublic)
@@ -141,25 +141,25 @@ export default function CuratedTab() {
                                             {b.name}
                                         </Link>
                                         <span className="text-[11px] text-dim truncate hidden sm:inline">
-                      by {b.userDisplayName || "Anonymous"}
+                      {t("admin.byUser", { name: b.userDisplayName || t("admin.anonymous") })}
                     </span>
                                         <button
                                             type="button"
                                             onClick={() => onToggle(b)}
                                             disabled={busyId === b.id}
-                                            className={`ml-auto text-[11.5px] px-3 py-1 border transition shrink-0 disabled:opacity-50 ${
+                                            className={`ms-auto text-[11.5px] px-3 py-1 border transition shrink-0 disabled:opacity-50 ${
                                                 isCurated
                                                     ? "border-amber-500/40 text-amber-500 hover:bg-amber-500/10"
                                                     : "border-token text-dim hover:text-accent hover:border-[color:var(--accent)]/40"
                                             }`}
                                         >
-                                            {busyId === b.id ? "…" : isCurated ? "Remove" : "Curate"}
+                                            {busyId === b.id ? "…" : isCurated ? t("admin.remove") : t("admin.curate")}
                                         </button>
                                     </div>
                                 );
                             })}
                         {allBuilds.content.filter((b) => b.isPublic).length === 0 && (
-                            <p className="text-dim text-[12.5px] py-2">No public builds yet.</p>
+                            <p className="text-dim text-[12.5px] py-2">{t("admin.noPublicBuilds")}</p>
                         )}
                     </div>
                 </div>
