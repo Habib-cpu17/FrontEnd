@@ -3,7 +3,29 @@
 @tailwind utilities;
 
 /* ═══════════════ THEME TOKENS ═══════════════ */
+/* Registered so the browser can interpolate them. Without @property a custom
+   property change is a discrete flip, which is why surfaces used to snap while
+   only <body> eased. Registering + transitioning them on :root cross-fades every
+   token consumer at once. Graceful no-op on engines without @property. */
+@property --bg { syntax: "<color>"; inherits: true; initial-value: #f7f4fb; }
+@property --bg-2 { syntax: "<color>"; inherits: true; initial-value: #ece5f5; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --surface-2 { syntax: "<color>"; inherits: true; initial-value: #f3eefa; }
+@property --text { syntax: "<color>"; inherits: true; initial-value: #1a0b2e; }
+@property --muted { syntax: "<color>"; inherits: true; initial-value: #6b5c80; }
+@property --border { syntax: "<color>"; inherits: true; initial-value: rgba(26, 11, 46, 0.08); }
+@property --pink { syntax: "<color>"; inherits: true; initial-value: #e91e79; }
+@property --purple { syntax: "<color>"; inherits: true; initial-value: #7a2ff7; }
+@property --purple-deep { syntax: "<color>"; inherits: true; initial-value: #5b21b6; }
+@property --cyan { syntax: "<color>"; inherits: true; initial-value: #0891b2; }
+@property --yellow { syntax: "<color>"; inherits: true; initial-value: #f59e0b; }
+@property --orange { syntax: "<color>"; inherits: true; initial-value: #ff8f00; }
+@property --green { syntax: "<color>"; inherits: true; initial-value: #10b981; }
+@property --glow-pink { syntax: "<color>"; inherits: true; initial-value: rgba(233, 30, 121, 0.2); }
+@property --glow-purple { syntax: "<color>"; inherits: true; initial-value: rgba(122, 47, 247, 0.2); }
+
 :root {
+    color-scheme: light;
     --bg: #f7f4fb;
     --bg-2: #ece5f5;
     --surface: #ffffff;
@@ -13,15 +35,24 @@
     --border: rgba(26, 11, 46, 0.08);
     --pink: #e91e79;
     --purple: #7a2ff7;
+    --purple-deep: #5b21b6;
     --cyan: #0891b2;
     --yellow: #f59e0b;
+    --orange: #ff8f00;
     --green: #10b981;
     --glow-pink: rgba(233, 30, 121, 0.2);
     --glow-purple: rgba(122, 47, 247, 0.2);
     --accent: var(--purple);
+    transition: --bg 0.3s ease, --bg-2 0.3s ease, --surface 0.3s ease,
+        --surface-2 0.3s ease, --text 0.3s ease, --muted 0.3s ease,
+        --border 0.3s ease, --pink 0.3s ease, --purple 0.3s ease,
+        --purple-deep 0.3s ease, --cyan 0.3s ease, --yellow 0.3s ease,
+        --orange 0.3s ease, --green 0.3s ease, --glow-pink 0.3s ease,
+        --glow-purple 0.3s ease;
 }
 
 .dark {
+    color-scheme: dark;
     --bg: #0d0520;
     --bg-2: #150828;
     --surface: #1a0b2e;
@@ -31,8 +62,10 @@
     --border: rgba(255, 255, 255, 0.08);
     --pink: #ff1e79;
     --purple: #8b2ff7;
+    --purple-deep: #5b21b6;
     --cyan: #22d3ee;
     --yellow: #ffc107;
+    --orange: #ff8f00;
     --green: #10b981;
     --glow-pink: rgba(255, 30, 121, 0.3);
     --glow-purple: rgba(139, 47, 247, 0.3);
@@ -46,7 +79,6 @@ body {
     color: var(--text);
     font-family: "Inter", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-display { font-family: "Space Grotesk", "Inter", sans-serif; letter-spacing: -0.02em; }
@@ -185,7 +217,7 @@ button[data-shape="round"]   { border-radius: 9999px !important; }
     display: grid;
     place-items: center;
     color: #fff;
-    background: linear-gradient(135deg, #ff1e79, #e91e79);
+    background: linear-gradient(135deg, var(--pink), color-mix(in srgb, var(--pink) 78%, var(--purple)));
     clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
     margin-left: -1px;
     transition: filter 0.2s ease;
@@ -262,6 +294,24 @@ html[dir="rtl"] .search-cat {
     to { transform: translateX(0); }
 }
 .slide-in-right { animation: slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.overlay-in { animation: overlay-in 0.2s ease; }
+
+@keyframes menu-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.menu-in { animation: menu-in 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes icon-swap {
+    from { opacity: 0; transform: rotate(-90deg) scale(0.7); }
+    to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+.icon-swap { animation: icon-swap 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }

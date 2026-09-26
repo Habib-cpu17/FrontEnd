@@ -96,7 +96,7 @@ export default function ProfilePage() {
                                 ? undefined
                                 : {
                                     background:
-                                        "linear-gradient(135deg, #ff1e79 0%, #8b2ff7 55%, #5b21b6 100%)",
+                                        "linear-gradient(135deg, var(--pink) 0%, var(--purple) 55%, var(--purple-deep) 100%)",
                                 }
                         }
                     >
@@ -104,6 +104,8 @@ export default function ProfilePage() {
                             <img
                                 src={toAbsoluteUrl(profile.bannerUrl)}
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -122,12 +124,14 @@ export default function ProfilePage() {
                             {/* Avatar */}
                             <div
                                 className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 border-4 border-surface overflow-hidden grid place-items-center font-display font-bold text-4xl text-white -mt-12 sm:-mt-16 shadow-2xl"
-                                style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                                style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                             >
                                 {profile.avatarUrl ? (
                                     <img
                                         src={toAbsoluteUrl(profile.avatarUrl)}
                                         alt={profile.displayName}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (

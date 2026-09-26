@@ -96,7 +96,7 @@ export default function ChatWidget() {
                 onClick={() => setOpen((v) => !v)}
                 className="fixed bottom-6 right-6 z-40 w-14 h-14 grid place-items-center text-white shadow-2xl transition hover:scale-105"
                 style={{
-                    background: "linear-gradient(135deg, #ff1e79, #8b2ff7)",
+                    background: "linear-gradient(135deg, var(--pink), var(--purple))",
                     boxShadow: "0 8px 32px rgba(233, 30, 121, 0.4)",
                 }}
                 aria-label={t("chat.openAssistant")}
@@ -123,7 +123,7 @@ export default function ChatWidget() {
                     <div className="flex items-center justify-between px-4 py-3 border-b border-token">
                         <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 grid place-items-center text-white"
-                                 style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}>
+                                 style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" />
                                 </svg>
@@ -194,7 +194,7 @@ export default function ChatWidget() {
                                     }`}
                                     style={
                                         m.role === "user"
-                                            ? { background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }
+                                            ? { background: "linear-gradient(135deg, var(--pink), var(--purple))" }
                                             : undefined
                                     }
                                 >
@@ -241,7 +241,7 @@ export default function ChatWidget() {
                                 onClick={() => onSend()}
                                 disabled={sending || !input.trim() || !sessionId}
                                 className="w-10 h-10 grid place-items-center text-white disabled:opacity-40 transition hover:scale-105"
-                                style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                                style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                                 aria-label={t("chat.send")}
                             >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLang } from "../context/LanguageContext";
@@ -7,6 +7,7 @@ import { toAbsoluteUrl } from "../services/uploadService";
 import ThemeToggle from "./ThemeToggle";
 import LanguageToggle from "./LanguageToggle";
 import SearchBar from "./SearchBar";
+import MobileMenu, { MobileMenuButton } from "./MobileMenu";
 
 const linkClass = ({ isActive }) =>
     `px-3 py-2 text-[13px] font-medium uppercase tracking-wide transition ${
@@ -20,6 +21,16 @@ export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
     const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [lastPath, setLastPath] = useState(location.pathname);
+
+    // Close the panel on navigation. Adjusting during render (React's documented
+    // pattern for state derived from props) avoids the frame where the panel is
+    // still open on the new route, which an effect would leave behind.
+    if (lastPath !== location.pathname) {
+        setLastPath(location.pathname);
+        setMenuOpen(false);
+    }
 
     // Hide the navbar search on /components — that page has its own search
     const hideSearch = location.pathname.startsWith("/components");
@@ -31,7 +42,11 @@ export default function Navbar() {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
+    const toggleMenu = useCallback(() => setMenuOpen((o) => !o), []);
+    const closeMenu = useCallback(() => setMenuOpen(false), []);
+
     const onLogout = async () => {
+        closeMenu();
         await logout();
         navigate("/");
     };
@@ -40,7 +55,17 @@ export default function Navbar() {
         .charAt(0)
         .toUpperCase();
 
+    const links = [
+        { to: "/components", label: t("nav.components") },
+        { to: "/builder", label: t("nav.builder") },
+        { to: "/my-builds", label: t("nav.myBuilds") },
+        { to: "/public-builds", label: t("nav.community") },
+        ...(firebaseUser ? [{ to: "/profile", label: t("nav.profile") }] : []),
+        ...(me?.role === "ADMIN" ? [{ to: "/admin", label: t("nav.admin") }] : []),
+    ];
+
     return (
+        <>
         <header
             className={`sticky top-0 z-40 transition-all duration-300 border-b ${
                 scrolled ? "backdrop-blur-xl border-token" : "border-transparent"
@@ -51,7 +76,7 @@ export default function Navbar() {
                     : "transparent",
             }}
         >
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
                 <Link to="/" className="flex items-center gap-2 shrink-0">
                     <div className="w-9 h-9 grid place-items-center gradient-brand shadow-lg">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -79,12 +104,15 @@ export default function Navbar() {
                             >
                 <span
                     className="w-7 h-7 shrink-0 grid place-items-center text-white font-display font-bold text-[11.5px] overflow-hidden"
-                    style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                    style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                 >
                   {me?.avatarUrl ? (
                       <img
                           src={toAbsoluteUrl(me.avatarUrl)}
                           alt=""
+                          width={28}
+                          height={28}
+                          decoding="async"
                           className="w-full h-full object-cover"
                       />
                   ) : (
@@ -97,7 +125,7 @@ export default function Navbar() {
                             </Link>
                             <button
                                 onClick={onLogout}
-                                className="text-[12.5px] text-dim hover:text-pink transition px-2"
+                                className="hidden sm:block text-[12.5px] text-dim hover:text-pink transition px-2"
                             >
                                 {t("nav.logOut")}
                             </button>
@@ -115,24 +143,40 @@ export default function Navbar() {
                             </Link>
                         </>
                     )}
+                    <MobileMenuButton
+                        open={menuOpen}
+                        onToggle={toggleMenu}
+                        controls="mobile-menu"
+                    />
                 </div>
             </div>
 
             <div className="hidden md:block border-t border-token">
-                <div className="max-w-7xl mx-auto px-6 h-11 flex items-center gap-1">
-                    <NavLink to="/components" className={linkClass}>{t("nav.components")}</NavLink>
-                    <NavLink to="/builder" className={linkClass}>{t("nav.builder")}</NavLink>
-                    <NavLink to="/my-builds" className={linkClass}>{t("nav.myBuilds")}</NavLink>
-                    <NavLink to="/public-builds" className={linkClass}>{t("nav.community")}</NavLink>
-                    {firebaseUser && (
-                        <NavLink to="/profile" className={linkClass}>{t("nav.profile")}</NavLink>
-                    )}
-                    {me?.role === "ADMIN" && (
-                        <NavLink to="/admin" className={linkClass}>{t("nav.admin")}</NavLink>
-                    )}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 h-11 flex items-center gap-1">
+                    {links.map((l) => (
+                        <NavLink key={l.to} to={l.to} className={linkClass}>
+                            {l.label}
+                        </NavLink>
+                    ))}
                     <span className="ms-auto text-[12px] text-dim">{t("nav.tagline")}</span>
                 </div>
             </div>
         </header>
+
+        <MobileMenu open={menuOpen} onClose={closeMenu} links={links}>
+            {firebaseUser ? (
+                <button
+                    onClick={onLogout}
+                    className="w-full py-3 text-[13px] font-medium uppercase tracking-wide border border-token text-dim hover:text-pink transition"
+                >
+                    {t("nav.logOut")}
+                </button>
+            ) : (
+                <Link to="/login" className="btn-secondary justify-center">
+                    {t("nav.signIn")}
+                </Link>
+            )}
+        </MobileMenu>
+        </>
     );
 }

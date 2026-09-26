@@ -7,16 +7,30 @@ import Reveal from "../components/Reveal";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageToggle from "../components/LanguageToggle";
 import SearchBar from "../components/SearchBar";
+import MobileMenu, { MobileMenuButton } from "../components/MobileMenu";
 import { useLang } from "../context/LanguageContext";
 
+const unsplash = (id, w) => `https://images.unsplash.com/${id}?w=${w}&q=80`;
+
+// Let the CDN pick per displayed size instead of always fetching one width.
+const unsplashSrcSet = (id) =>
+    [400, 700, 1200].map((w) => `${unsplash(id, w)} ${w}w`).join(", ");
+
 const CATEGORY_TILES = (t) => [
-    { key: "GPU",          label: t("landing.catGpu"),          count: 8, img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&q=80" },
-    { key: "CPU",          label: t("landing.catCpu"),          count: 8, img: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=700&q=80" },
-    { key: "MOTHERBOARD",  label: t("landing.catMotherboard"),  count: 6, img: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&q=80" },
-    { key: "RAM",          label: t("landing.catRam"),          count: 5, img: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=700&q=80" },
-    { key: "STORAGE",      label: t("landing.catStorage"),      count: 5, img: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=700&q=80" },
-    { key: "POWER_SUPPLY", label: t("landing.catPsu"),          count: 5, img: "https://images.unsplash.com/photo-1591405351990-4726e331f141?w=700&q=80" },
-    { key: "CASE",         label: t("landing.catCase"),         count: 6, img: "https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=700&q=80" },
+    { key: "GPU",          label: t("landing.catGpu"),          count: 8, id: "photo-1587202372775-e229f172b9d7" },
+    { key: "CPU",          label: t("landing.catCpu"),          count: 8, id: "photo-1555617981-dac3880eac6e" },
+    { key: "MOTHERBOARD",  label: t("landing.catMotherboard"),  count: 6, id: "photo-1591799264318-7e6ef8ddb7ea" },
+    { key: "RAM",          label: t("landing.catRam"),          count: 5, id: "photo-1562976540-1502c2145186" },
+    { key: "STORAGE",      label: t("landing.catStorage"),      count: 5, id: "photo-1597872200969-2b65d56bd16b" },
+    { key: "POWER_SUPPLY", label: t("landing.catPsu"),          count: 5, id: "photo-1591405351990-4726e331f141" },
+    { key: "CASE",         label: t("landing.catCase"),         count: 6, id: "photo-1541029071515-84cc54f84dc5" },
+];
+
+const BUILD_IMAGES = [
+    "photo-1587202372775-e229f172b9d7",
+    "photo-1591799264318-7e6ef8ddb7ea",
+    "photo-1541029071515-84cc54f84dc5",
+    "photo-1562976540-1502c2145186",
 ];
 
 const TRUST = (t) => [
@@ -80,7 +94,7 @@ export default function LandingPage() {
     const [builds, setBuilds] = useState([]);
     const [curated, setCurated] = useState([]);
 
-    // ── Continuous scroll carousel ──
+    // â”€â”€ Continuous scroll carousel â”€â”€
     const carouselRef = useRef(null);
     const rafRef = useRef(null);
     const lastTimeRef = useRef(null);
@@ -150,18 +164,27 @@ export default function LandingPage() {
 
     const primaryHref = firebaseUser ? "/builder" : "/register";
     const displayBuilds = curated.length > 0 ? curated.slice(0, 4) : builds;
+    const [menuOpen, setMenuOpen] = useState(false);
 
-    // Render each tile twice — second set makes the loop seamless.
+    // Render each tile twice â€” second set makes the loop seamless.
     const carouselTiles = [...CATEGORY_TILES(t), ...CATEGORY_TILES(t)];
+
+    const links = [
+        { to: "/components", label: t("landing.components") },
+        { to: "/builder", label: t("landing.builder") },
+        { to: "/public-builds", label: t("landing.community") },
+        { to: "/my-builds", label: t("landing.myBuilds") },
+    ];
 
     return (
         <div className="min-h-screen bg-page text-body">
-            {/* ═══════════ NAV ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• NAV â•â•â•â•â•â•â•â•â•â•â• */}
+            <>
             <header
                 className="sticky top-0 z-50 backdrop-blur-md border-b border-token"
                 style={{ background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}
             >
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
                     <Link to="/" className="flex items-center gap-2 shrink-0">
                         <div className="w-9 h-9 grid place-items-center gradient-brand shadow-lg">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -197,21 +220,30 @@ export default function LandingPage() {
                                 </Link>
                             </>
                         )}
+                        <MobileMenuButton
+                            open={menuOpen}
+                            onToggle={() => setMenuOpen((o) => !o)}
+                            controls="mobile-menu"
+                        />
                     </div>
                 </div>
 
                 <div className="hidden md:block border-t border-token">
-                    <div className="max-w-7xl mx-auto px-6 h-11 flex items-center gap-6 text-[12.5px] font-medium">
-                        <Link to="/components" className="text-dim hover:text-pink transition uppercase">{t("landing.components")}</Link>
-                        <Link to="/builder" className="text-dim hover:text-pink transition uppercase">{t("landing.builder")}</Link>
-                        <Link to="/public-builds" className="text-dim hover:text-pink transition uppercase">{t("landing.community")}</Link>
-                        <Link to="/my-builds" className="text-dim hover:text-pink transition uppercase">{t("landing.myBuilds")}</Link>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 h-11 flex items-center gap-6 text-[12.5px] font-medium">
+                        {links.map((l) => (
+                            <Link key={l.to} to={l.to} className="text-dim hover:text-pink transition uppercase">
+                                {l.label}
+                            </Link>
+                        ))}
                         <span className="ms-auto text-dim">{t("landing.tagline")}</span>
                     </div>
                 </div>
             </header>
 
-            {/* ═══════════ HERO ═══════════ */}
+            <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} links={links} />
+            </>
+
+            {/* â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â• */}
             <section className="relative pt-8 pb-12 overflow-hidden">
                 <div
                     className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none"
@@ -222,7 +254,7 @@ export default function LandingPage() {
                     style={{ background: "var(--glow-purple)" }}
                 />
 
-                <div className="relative max-w-7xl mx-auto px-6">
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="grid lg:grid-cols-3 gap-4">
                         {/* BIG HERO BANNER */}
                         <Reveal className="lg:col-span-2">
@@ -230,7 +262,7 @@ export default function LandingPage() {
                                 className="relative overflow-hidden h-full min-h-[400px]"
                                 style={{
                                     background:
-                                        "linear-gradient(135deg, #ff1e79 0%, #8b2ff7 55%, #5b21b6 100%)",
+                                        "linear-gradient(135deg, var(--pink) 0%, var(--purple) 55%, var(--purple-deep) 100%)",
                                 }}
                             >
                                 <div className="absolute inset-0 bg-stripes pointer-events-none" />
@@ -284,8 +316,14 @@ export default function LandingPage() {
 
                                     <div className="relative h-[280px] md:h-[360px] animate-floaty">
                                         <img
-                                            src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&q=80"
+                                            src={unsplash("photo-1587202372775-e229f172b9d7", 800)}
+                                            srcSet={unsplashSrcSet("photo-1587202372775-e229f172b9d7")}
+                                            sizes="(min-width: 768px) 34vw, 92vw"
+                                            width={800}
+                                            height={800}
                                             alt={t("landing.heroAlt")}
+                                            fetchPriority="high"
+                                            decoding="async"
                                             className="w-full h-full object-cover shadow-2xl border-2 border-white/20"
                                         />
                                     </div>
@@ -298,7 +336,7 @@ export default function LandingPage() {
                             <Reveal delay={100} className="row-span-2">
                                 <div
                                     className="relative overflow-hidden h-full p-6 flex flex-col justify-between"
-                                    style={{ background: "linear-gradient(135deg, #7a2ff7, #22d3ee)" }}
+                                    style={{ background: "linear-gradient(135deg, var(--purple), var(--cyan))" }}
                                 >
                                     <div className="absolute inset-0 bg-stripes pointer-events-none" />
                                     <div
@@ -329,8 +367,10 @@ export default function LandingPage() {
                                     </Link>
 
                                     <img
-                                        src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=500&q=80"
+                                        src={unsplash("photo-1591799264318-7e6ef8ddb7ea", 500)}
                                         alt=""
+                                        loading="lazy"
+                                        decoding="async"
                                         className="absolute right-0 bottom-0 w-40 opacity-50 pointer-events-none"
                                     />
                                 </div>
@@ -339,7 +379,7 @@ export default function LandingPage() {
                             <Reveal delay={200}>
                                 <div
                                     className="relative overflow-hidden h-full p-5 flex items-center justify-between"
-                                    style={{ background: "linear-gradient(135deg, #ffc107, #ff8f00)" }}
+                                    style={{ background: "linear-gradient(135deg, var(--yellow), var(--orange))" }}
                                 >
                                     <div
                                         className="absolute inset-0 pointer-events-none"
@@ -394,9 +434,9 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══════════ FEATURED CATEGORIES — continuous smooth scroll ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• FEATURED CATEGORIES â€” continuous smooth scroll â•â•â•â•â•â•â•â•â•â•â• */}
             <section className="py-16">
-                <div className="max-w-7xl mx-auto px-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <Reveal>
                         <div className="flex items-end justify-between mb-8 gap-4">
                             <div>
@@ -455,8 +495,12 @@ export default function LandingPage() {
                                                 style={{ background: "var(--surface-2)" }}
                                             >
                                                 <img
-                                                    src={c.img}
+                                                    src={unsplash(c.id, 700)}
+                                                    srcSet={unsplashSrcSet(c.id)}
+                                                    sizes="(min-width: 1024px) 340px, 78vw"
                                                     alt={c.label}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                     draggable={false}
                                                 />
@@ -478,9 +522,9 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══════════ TOP COMMUNITY BUILDS ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• TOP COMMUNITY BUILDS â•â•â•â•â•â•â•â•â•â•â• */}
             <section className="py-16 border-t border-token">
-                <div className="max-w-7xl mx-auto px-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <Reveal>
                         <div className="flex items-end justify-between mb-8">
                             <div>
@@ -520,15 +564,12 @@ export default function LandingPage() {
                                             style={{ background: "var(--surface-2)" }}
                                         >
                                             <img
-                                                src={
-                                                    [
-                                                        "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
-                                                        "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
-                                                        "https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=600&q=80",
-                                                        "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
-                                                    ][i % 4]
-                                                }
-                                                alt={b.name}
+                                                src={unsplash(BUILD_IMAGES[i % 4], 600)}
+                                                srcSet={unsplashSrcSet(BUILD_IMAGES[i % 4])}
+                                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 92vw"
+                                                alt=""
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />
                                             <span className="absolute top-3 right-3 text-[10.5px] font-bold px-2 py-0.5 bg-yellow-400 text-[#1a0b2e]">
@@ -559,21 +600,25 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══════════ CTA ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• CTA â•â•â•â•â•â•â•â•â•â•â• */}
             <section className="py-16 border-t border-token">
-                <div className="max-w-7xl mx-auto px-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <Reveal>
                         <div
                             className="relative overflow-hidden grid md:grid-cols-2"
-                            style={{ background: "linear-gradient(135deg, #8b2ff7, #ff1e79)" }}
+                            style={{ background: "linear-gradient(135deg, var(--purple), var(--pink))" }}
                         >
                             <div className="absolute inset-0 bg-stripes pointer-events-none" />
                             <XMark className="absolute top-6 right-6 w-16 h-16 pointer-events-none" />
 
                             <div className="relative min-h-[320px] md:min-h-[380px] p-8 md:p-0">
                                 <img
-                                    src="https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=900&q=80"
+                                    src={unsplash("photo-1541029071515-84cc54f84dc5", 900)}
+                                    srcSet={unsplashSrcSet("photo-1541029071515-84cc54f84dc5")}
+                                    sizes="(min-width: 768px) 50vw, 100vw"
                                     alt={t("landing.ctaAlt")}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="absolute inset-0 w-full h-full object-cover opacity-90"
                                 />
                             </div>
@@ -604,9 +649,9 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══════════ FOOTER ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• FOOTER â•â•â•â•â•â•â•â•â•â•â• */}
             <footer className="border-t border-token py-10">
-                <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4 text-[12.5px] text-dim">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 text-[12.5px] text-dim">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 gradient-brand grid place-items-center">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
@@ -618,7 +663,7 @@ export default function LandingPage() {
                     <div className="flex items-center gap-6">
                         <Link to="/components" className="hover:text-pink transition">{t("landing.components")}</Link>
                         <Link to="/public-builds" className="hover:text-pink transition">{t("landing.community")}</Link>
-                        <span>© {new Date().getFullYear()}</span>
+                        <span>Â© {new Date().getFullYear()}</span>
                     </div>
                 </div>
             </footer>

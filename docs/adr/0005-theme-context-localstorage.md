@@ -48,3 +48,25 @@ Negative:
 - next-themes - designed for Next.js
 - CSS-only media queries - no user override; always follows OS
 - Server-stored preference - overkill; no per-account theming needed
+
+## Amendment (2026-09-26)
+
+This ADR's recorded mitigation for the light-theme flash **was never actually
+implemented**. The "blocking script in index.html" it refers to did not exist in
+`index.html`, so every dark-mode user saw a light flash on hard reload. The
+script is now present and this ADR's claim is accurate.
+
+Two further corrections, both from the same audit pass:
+
+- The `Implementation` snippet above is out of date. `ThemeContext` now reads
+  `localStorage` and `matchMedia` inside a `try/catch` — the unguarded
+  `localStorage.getItem` would throw and blank the app wherever storage is
+  unavailable (blocked cookies, some private-mode setups). The first-visit
+  fallback is the OS preference, not a hardcoded `"light"`.
+- `ThemeContext` now also rewrites every `<meta name="theme-color">` `content`
+  on change. Those tags are scoped with `media="(prefers-color-scheme: ...)"`,
+  so they follow the OS and go stale the instant a user overrides the theme
+  with the toggle.
+
+The `Consequences` note about surfaces snapping during a theme switch is a
+separate, still-open problem, addressed in ADR 0008.

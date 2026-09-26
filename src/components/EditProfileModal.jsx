@@ -161,13 +161,14 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                         </label>
                         <div
                             className="relative h-28 overflow-hidden border border-token group cursor-pointer"
-                            style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                            style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                             onClick={() => !bannerUploading && bannerInputRef.current?.click()}
                         >
                             {form.bannerUrl ? (
                                 <img
                                     src={toAbsoluteUrl(form.bannerUrl)}
                                     alt=""
+                                    decoding="async"
                                     className="w-full h-full object-cover"
                                 />
                             ) : null}
@@ -208,13 +209,16 @@ export default function EditProfileModal({ open, profile, onClose, onSaved }) {
                     <div className="flex items-start gap-4">
                         <div
                             className="relative w-20 h-20 shrink-0 overflow-hidden border-2 border-token grid place-items-center font-display font-bold text-3xl text-white cursor-pointer group"
-                            style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                            style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                             onClick={() => !avatarUploading && avatarInputRef.current?.click()}
                         >
                             {form.avatarUrl ? (
                                 <img
                                     src={toAbsoluteUrl(form.avatarUrl)}
                                     alt=""
+                                    width={80}
+                                    height={80}
+                                    decoding="async"
                                     className="w-full h-full object-cover"
                                 />
                             ) : (

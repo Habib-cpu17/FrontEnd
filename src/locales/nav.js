@@ -13,6 +13,9 @@ export default {
         "nav.logOut": "Log out",
         "nav.viewProfile": "View profile",
         "nav.tagline": "Build. Compare. Share.",
+        "nav.menu": "Main menu",
+        "nav.openMenu": "Open menu",
+        "nav.closeMenu": "Close menu",
     },
     ar: {
         "nav.brand": "Setup Builder",
@@ -28,5 +31,8 @@ export default {
         "nav.logOut": "تسجيل الخروج",
         "nav.viewProfile": "عرض الملف الشخصي",
         "nav.tagline": "ابنِ. قارن. شارك.",
+        "nav.menu": "القائمة الرئيسية",
+        "nav.openMenu": "فتح القائمة",
+        "nav.closeMenu": "إغلاق القائمة",
     },
 };

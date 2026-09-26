@@ -470,12 +470,16 @@ export default function BuildDetailPage() {
                                         <Link
                                             to={`/users/${c.userId}`}
                                             className="w-10 h-10 shrink-0 overflow-hidden grid place-items-center font-display font-semibold text-[14px] text-white border border-token"
-                                            style={{ background: "linear-gradient(135deg, #ff1e79, #8b2ff7)" }}
+                                            style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                                         >
                                             {c.userAvatarUrl ? (
                                                 <img
                                                     src={toAbsoluteUrl(c.userAvatarUrl)}
                                                     alt={c.userDisplayName}
+                                                    width={40}
+                                                    height={40}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (

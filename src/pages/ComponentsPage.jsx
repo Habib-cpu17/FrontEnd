@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listComponents } from "../services/componentService";
+import { toAbsoluteUrl } from "../services/uploadService";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import Reveal from "../components/Reveal";
@@ -114,7 +115,7 @@ export default function ComponentsPage() {
             <Reveal>
                 <div
                     className="relative overflow-hidden p-8 md:p-12"
-                    style={{ background: "linear-gradient(135deg, #ff1e79 0%, #8b2ff7 100%)" }}
+                    style={{ background: "linear-gradient(135deg, var(--pink), var(--purple))" }}
                 >
                     <div
                         className="absolute inset-0 pointer-events-none"
@@ -234,8 +235,10 @@ export default function ComponentsPage() {
                                     >
                                         {c.imageUrl ? (
                                             <img
-                                                src={c.imageUrl}
+                                                src={toAbsoluteUrl(c.imageUrl)}
                                                 alt={c.name}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
                                         ) : (
